@@ -665,6 +665,9 @@ export default function ArabicLearningThreeColumns() {
   const [translateError, setTranslateError] = useState<string | null>(null);
   const [copiedTranslateType, setCopiedTranslateType] = useState<"arabic" | "latin" | "all" | null>(null);
 
+  // Mode Menu Sidebar Kolom Kiri: default null (tertutup), "translate" (Penerjemah), "reference" (Chat Referensi)
+  const [activeLeftMenu, setActiveLeftMenu] = useState<"translate" | "reference" | null>(null);
+
   // Mode Tampilan Kotak Kolom Kiri: "normal" (buka bagi 2), "minimized" (ciutkan), "full" (layar penuh kolom)
   const [topBoxMode, setTopBoxMode] = useState<"normal" | "minimized" | "full">("normal");
   const [bottomBoxMode, setBottomBoxMode] = useState<"normal" | "minimized" | "full">("normal");
@@ -1578,572 +1581,558 @@ export default function ArabicLearningThreeColumns() {
         </div>
       )}
 
-      {/* CONTAINER UTAMA: 3 KOLOM BERDAMPINGAN FIT HEIGHT (100% LAYAR PENUH) */}
-      <main className="flex-1 min-h-0 w-full max-w-[1720px] mx-auto p-2 sm:p-2.5 lg:p-3 grid grid-cols-1 lg:grid-cols-12 gap-2.5 sm:gap-3 items-stretch h-full overflow-hidden">
+      {/* CONTAINER UTAMA: MENU BAR ICON + SLIDER DRAWER + RUANG BICARA + MUDARRIS AI */}
+      <main className="flex-1 min-h-0 w-full max-w-[1780px] mx-auto p-2 sm:p-2.5 lg:p-3 flex flex-col lg:flex-row gap-2.5 sm:gap-3 items-stretch h-full overflow-hidden">
         
         {/* ========================================================================= */}
-        {/* 1. KOLOM SEBELAH KIRI (DIBAGI 2 BARIS):                                    */}
-        {/*    BARIS ATAS : TRANSLATE INDONESIA - ARAB (TULISAN ARAB & LATIN)         */}
-        {/*    BARIS BAWAH: CHAT REFERENSI TEKS (TETAP SAMA SEPERTI SEBELUMNYA)       */}
+        {/* 1. MENU ICON BAR DI SISI PALING KIRI DENGAN TOOLTIP HOVER & SLIDER DRAWER  */}
         {/* ========================================================================= */}
         <div
-          className={`lg:col-span-4 h-full min-h-0 flex flex-col gap-2.5 overflow-hidden ${
+          className={`shrink-0 flex items-stretch z-30 ${
             activeMobileTab === "left" ? "flex" : "hidden lg:flex"
           }`}
         >
-          {/* ----------------------------------------------------------------------- */}
-          {/* BARIS ATAS: TRANSLATOR INDONESIA - ARAB (ARAB BERHARAKAT & LATIN)       */}
-          {/* ----------------------------------------------------------------------- */}
-          <section
-            className={`flex flex-col bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-xl transition-all duration-200 ${
-              topBoxMode === "minimized" ? "shrink-0" : "flex-1 min-h-0"
-            }`}
-          >
-            {/* Header Translator */}
-            <div
-              onClick={() => {
-                if (topBoxMode === "minimized") handleTopMode("normal");
-              }}
-              className={`shrink-0 bg-slate-900 border-b border-slate-800 px-2.5 py-2 flex items-center justify-between ${
-                topBoxMode === "minimized" ? "cursor-pointer hover:bg-slate-800/60" : ""
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
-                  <Languages className="w-3.5 h-3.5" />
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800/60">
-                    Arab & Latin
-                  </span>
-                  {topBoxMode === "minimized" && (
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/50">
-                      Diminimalkan
-                    </span>
-                  )}
-                  {topBoxMode === "full" && (
-                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-emerald-900/80 text-emerald-200 border border-emerald-700/60">
-                      Full
-                    </span>
-                  )}
+          {/* A. Bar Menu Berisi Icon Saja (Default Tampil Ramping) */}
+          <aside className="w-13 sm:w-14 bg-slate-900/95 border border-slate-800 rounded-2xl flex flex-col items-center justify-between py-3 px-1.5 shadow-xl backdrop-blur-md select-none shrink-0">
+            {/* Bagian Atas: Brand Badge & Tombol Menu */}
+            <div className="flex flex-col items-center gap-3 w-full">
+              {/* Badge Huruf Arab Mini */}
+              <div
+                className="w-8 h-8 rounded-xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center font-serif text-emerald-300 font-bold text-sm shadow-inner"
+                title="Pusat Belajar Bahasa Arab"
+              >
+                ض
+              </div>
+
+              <div className="w-6 h-px bg-slate-800 my-0.5" />
+
+              {/* Menu 1: Penerjemah Indonesia - Arab */}
+              <div className="relative group flex items-center justify-center w-full">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveLeftMenu(activeLeftMenu === "translate" ? null : "translate");
+                  }}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    activeLeftMenu === "translate"
+                      ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950/60 ring-2 ring-emerald-400/40 scale-105"
+                      : "bg-slate-800/80 hover:bg-slate-800 text-emerald-400 hover:text-emerald-300 border border-slate-700/60"
+                  }`}
+                  aria-label="Penerjemah Indonesia - Arab"
+                >
+                  <Languages className="w-5 h-5" />
+                </button>
+
+                {/* Tooltip on Hover */}
+                <div className="absolute left-full ml-2.5 px-2.5 py-1 bg-slate-900 text-slate-100 text-xs font-semibold rounded-lg shadow-xl border border-slate-700 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span>Penerjemah Indonesia ➔ Arab</span>
                 </div>
               </div>
 
-              {/* Kontrol Bahasa & Tombol Mode: Minimize, Buka, Full */}
-              <div className="flex items-center gap-1 sm:gap-1.5" onClick={(e) => e.stopPropagation()}>
-                {topBoxMode !== "minimized" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newDir = translateDirection === "id-ar" ? "ar-id" : "id-ar";
-                      setTranslateDirection(newDir);
-                      if (translateResult) {
-                        setTranslateInput(newDir === "ar-id" ? translateResult.arabic : translateResult.indonesian);
-                      }
-                    }}
-                    className="px-1.5 sm:px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] sm:text-[11px] font-semibold text-emerald-300 border border-slate-700 flex items-center gap-1 transition-colors"
-                    title="Tukar Arah Bahasa (Indonesia ⇄ Arab)"
-                  >
-                    <ArrowLeftRight className="w-3 h-3" />
-                    <span>{translateDirection === "id-ar" ? "ID ➔ AR" : "AR ➔ ID"}</span>
-                  </button>
-                )}
+              {/* Menu 2: Chat Referensi Teks */}
+              <div className="relative group flex items-center justify-center w-full">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveLeftMenu(activeLeftMenu === "reference" ? null : "reference");
+                  }}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    activeLeftMenu === "reference"
+                      ? "bg-sky-600 text-white shadow-lg shadow-sky-950/60 ring-2 ring-sky-400/40 scale-105"
+                      : "bg-slate-800/80 hover:bg-slate-800 text-sky-400 hover:text-sky-300 border border-slate-700/60"
+                  }`}
+                  aria-label="Chat Referensi Teks"
+                >
+                  <BookOpen className="w-5 h-5" />
+                </button>
 
-                {/* Segmented Controls: Min, Buka, Full */}
-                <div className="flex items-center bg-slate-950/90 p-0.5 rounded-lg border border-slate-800 text-[10px]">
-                  <button
-                    type="button"
-                    onClick={() => handleTopMode("minimized")}
-                    className={`px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors ${
-                      topBoxMode === "minimized"
-                        ? "bg-amber-950/90 text-amber-300 font-bold border border-amber-800/50"
-                        : "text-slate-400 hover:text-slate-200"
-                    }`}
-                    title="Minimize kotak penerjemah"
-                  >
-                    <Minus className="w-2.5 h-2.5" />
-                    <span className="hidden sm:inline">Min</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTopMode("normal")}
-                    className={`px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors ${
-                      topBoxMode === "normal"
-                        ? "bg-slate-800 text-emerald-300 font-bold border border-slate-700"
-                        : "text-slate-400 hover:text-slate-200"
-                    }`}
-                    title="Buka normal (bagi dua kolom)"
-                  >
-                    <Minimize2 className="w-2.5 h-2.5" />
-                    <span className="hidden sm:inline">Buka</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleTopMode("full")}
-                    className={`px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors ${
-                      topBoxMode === "full"
-                        ? "bg-emerald-600 text-white font-bold shadow-sm"
-                        : "text-slate-400 hover:text-slate-200"
-                    }`}
-                    title="Tampilan layar penuh (kotak referensi minimize)"
-                  >
-                    <Maximize2 className="w-2.5 h-2.5" />
-                    <span className="hidden sm:inline">Full</span>
-                  </button>
+                {/* Tooltip on Hover */}
+                <div className="absolute left-full ml-2.5 px-2.5 py-1 bg-slate-900 text-slate-100 text-xs font-semibold rounded-lg shadow-xl border border-slate-700 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-400" />
+                  <span>Chat Referensi Teks (Nahwu / Shorof)</span>
                 </div>
               </div>
             </div>
 
-            {/* Isi Konten Translator (Hanya Tampil Jika Tidak Diminimalkan) */}
-            {topBoxMode !== "minimized" && (
-              <>
-
-            {/* Area Hasil Terjemahan (Scrollable & Responsive) */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-2.5 sm:p-3 space-y-2.5 text-xs">
-              {isTranslating ? (
-                <div className="h-full min-h-[140px] flex flex-col items-center justify-center gap-2 text-emerald-400 text-xs">
-                  <RefreshCw className="w-5 h-5 animate-spin text-emerald-400" />
-                  <span className="font-medium animate-pulse">
-                    Menerjemahkan teks berharakat & Latin...
-                  </span>
-                </div>
-              ) : translateError ? (
-                <div className="p-2.5 bg-rose-950/40 border border-rose-800/60 rounded-xl text-rose-300 text-xs flex items-start gap-2">
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="font-semibold">{translateError}</p>
-                    <button
-                      type="button"
-                      onClick={() => handleTranslate()}
-                      className="mt-1 text-[11px] underline hover:text-white"
-                    >
-                      Coba lagi
-                    </button>
+            {/* Bagian Bawah: Indikator Tutup Drawer Jika Terbuka */}
+            <div className="flex flex-col items-center gap-2 w-full">
+              {activeLeftMenu && (
+                <div className="relative group flex items-center justify-center w-full">
+                  <button
+                    type="button"
+                    onClick={() => setActiveLeftMenu(null)}
+                    className="w-9 h-9 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-rose-300 border border-slate-700/60 flex items-center justify-center transition-colors"
+                    aria-label="Tutup Panel Menu"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                  <div className="absolute left-full ml-2.5 px-2 py-1 bg-slate-900 text-slate-300 text-[10px] font-medium rounded-lg shadow-xl border border-slate-700 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                    Tutup Slider Panel
                   </div>
                 </div>
-              ) : translateResult ? (
-                <div className="space-y-2">
-                  {/* Kotak Tulisan Arab Berharakat */}
-                  <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-2.5 shadow-sm space-y-1.5">
-                    <div className="flex items-center justify-between text-[10px] pb-1 border-b border-slate-800/70">
-                      <span className="font-bold uppercase tracking-wider text-emerald-400">
-                        العربية (Teks Arab Berharakat):
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => playAudio(translateResult.arabic, "translate")}
-                          className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-700 text-emerald-300 hover:text-white border border-slate-700 flex items-center gap-1 transition-colors text-[10px]"
-                          title="Dengar pelafalan audio Arab"
-                        >
-                          <Volume2 className="w-3 h-3 text-emerald-400" />
-                          <span>Dengar</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleCopyTranslate(translateResult.arabic, "arabic")}
-                          className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
-                          title="Salin Teks Arab"
-                        >
-                          {copiedTranslateType === "arabic" ? (
-                            <Check className="w-3 h-3 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                        </button>
-                      </div>
-                    </div>
+              )}
+            </div>
+          </aside>
 
-                    <div
-                      dir="rtl"
-                      className="font-serif text-lg sm:text-xl font-bold text-teal-100 leading-relaxed tracking-wide select-text text-right"
-                    >
-                      {translateResult.arabic}
-                    </div>
+          {/* B. SLIDER DRAWER PANEL DARI KIRI (DEFAULT TERTUTUP - MUNCUL KETIKA MENU DIKLIK) */}
+          {activeLeftMenu && (
+            <div className="w-[340px] sm:w-[400px] xl:w-[440px] h-full min-h-0 ml-2.5 flex flex-col bg-slate-900/95 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md animate-in slide-in-from-left-4 duration-200">
+              {/* Header Slider Panel */}
+              <div className="shrink-0 p-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center ${
+                      activeLeftMenu === "translate"
+                        ? "bg-emerald-950 border border-emerald-800/60 text-emerald-400"
+                        : "bg-sky-950 border border-sky-800/60 text-sky-400"
+                    }`}
+                  >
+                    {activeLeftMenu === "translate" ? (
+                      <Languages className="w-4 h-4" />
+                    ) : (
+                      <BookOpen className="w-4 h-4" />
+                    )}
                   </div>
-
-                  {/* Kotak Transliterasi Latin */}
-                  {translateResult.latin && (
-                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2 shadow-sm space-y-1">
-                      <div className="flex items-center justify-between text-[10px]">
-                        <span className="font-bold uppercase tracking-wider text-sky-400">
-                          Transliterasi Latin (Cara Baca):
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleCopyTranslate(translateResult.latin, "latin")}
-                          className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-sky-300 transition-colors"
-                          title="Salin Transliterasi Latin"
-                        >
-                          {copiedTranslateType === "latin" ? (
-                            <Check className="w-3 h-3 text-emerald-400" />
-                          ) : (
-                            <Copy className="w-3 h-3" />
-                          )}
-                          <span>Salin</span>
-                        </button>
-                      </div>
-                      <p className="text-xs sm:text-sm text-sky-200/90 italic font-medium leading-relaxed select-text">
-                        {translateResult.latin}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Kotak Terjemahan Indonesia */}
-                  <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl p-2 text-xs">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
-                      Arti / Terjemahan:
-                    </span>
-                    <p className="text-xs text-slate-200 font-medium leading-relaxed select-text">
-                      {translateResult.indonesian}
+                  <div className="min-w-0">
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-100 truncate">
+                      {activeLeftMenu === "translate"
+                        ? "Penerjemah Indonesia ➔ Arab"
+                        : "Chat Referensi Teks"}
+                    </h3>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      {activeLeftMenu === "translate"
+                        ? "Teks Arab Berharakat Lengkap & Transliterasi Latin"
+                        : "Tanya Kaidah Nahwu, Shorof, Tasrif & Mufradat (Tanpa Suara)"}
                     </p>
                   </div>
-
-                  {/* Catatan Kosakata / Kaidah (Bila Ada) */}
-                  {translateResult.notes && (
-                    <div className="text-[11px] text-emerald-300/90 bg-emerald-950/30 p-2 rounded-xl border border-emerald-900/50 leading-relaxed flex items-start gap-1.5">
-                      <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <div>
-                        <span className="font-semibold text-emerald-300">Catatan Kaidah: </span>
-                        <span>{translateResult.notes}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Aksi Sinergi: Kirim / Tanya ke Chat Referensi di Bawah */}
-                  <div className="flex items-center justify-end gap-1.5 pt-1">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const prompt = `Jelaskan kaidah tata bahasa (Nahwu/Shorof), i'rab, dan kosa kata dari kalimat berikut:\n${translateResult.arabic}\n(${translateResult.latin}) - "${translateResult.indonesian}"`;
-                        handleSendRefMessage(prompt);
-                      }}
-                      className="text-[10px] px-2 py-0.5 rounded-lg bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-800/60 flex items-center gap-1 transition-colors"
-                      title="Kirim kalimat ini ke Chat Referensi di bawah untuk dibahas kaidahnya"
-                    >
-                      <BookOpen className="w-3 h-3" />
-                      <span>Bahas Kaidah di Chat Bawah</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setTargetPractice({
-                          arabic: translateResult.arabic,
-                          latin: translateResult.latin,
-                          translation:
-                            translateResult.indonesian || translateResult.arabic,
-                        });
-                        setLiveTranscript("");
-                        setValidationResult(null);
-                        setActiveMobileTab("center");
-                      }}
-                      className="text-[10px] px-2 py-0.5 rounded-lg bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-800/60 flex items-center gap-1 transition-colors"
-                      title="Jadikan target kalimat latihan bicara di Ruang Bicara (Kolom Tengah)"
-                    >
-                      <Target className="w-3 h-3 text-teal-300" />
-                      <span>Latih di Ruang Bicara</span>
-                    </button>
-                  </div>
                 </div>
-              ) : (
-                <div className="h-full min-h-[140px] flex flex-col items-center justify-center p-3 text-center text-slate-400">
-                  <div className="w-8 h-8 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-center text-emerald-400 mb-1.5 shadow-inner">
-                    <Languages className="w-4 h-4" />
-                  </div>
-                  <p className="text-xs font-semibold text-slate-200 mb-0.5">
-                    Penerjemah Indonesia ➔ Arab
-                  </p>
-                  <p className="text-[11px] text-slate-400 max-w-xs">
-                    Ketik kalimat di bawah untuk mendapatkan teks Arab berharakat lengkap dan bacaan Latin.
-                  </p>
-                </div>
-              )}
-            </div>
 
-            {/* Harakat Pintas untuk Input Terjemahan jika Arah Arab ke ID */}
-            {translateDirection === "ar-id" && (
-              <div className="shrink-0 p-1 bg-slate-950/90 border-t border-slate-800 flex items-center gap-1 overflow-x-auto">
-                <span className="text-[10px] text-slate-400 font-medium px-1 shrink-0">
-                  Harakat:
-                </span>
-                <div className="flex items-center gap-1">
-                  {ARABIC_SHORTCUTS.map((sc, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={() => insertTranslateArabicChar(sc.char)}
-                      title={sc.label}
-                      className="w-5 h-5 rounded bg-slate-800 hover:bg-emerald-700 hover:text-white text-slate-200 border border-slate-700 flex items-center justify-center font-serif text-xs transition-colors"
-                    >
-                      {sc.char}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Input Form Translator */}
-            <div className="shrink-0 p-2 bg-slate-900 border-t border-slate-800">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleTranslate();
-                }}
-                className="flex items-center gap-1.5"
-              >
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={translateInput}
-                    onChange={(e) => setTranslateInput(e.target.value)}
-                    placeholder={
-                      translateDirection === "id-ar"
-                        ? "Ketik kalimat Indonesia (mis: 'Saya sedang belajar')..."
-                        : "اكتب هنا بالعربية..."
-                    }
-                    dir={translateDirection === "ar-id" ? "rtl" : "ltr"}
-                    className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner pr-7"
-                    disabled={isTranslating}
-                  />
-                  {translateInput && (
-                    <button
-                      type="button"
-                      onClick={() => setTranslateInput("")}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-500 hover:text-slate-300"
-                      title="Hapus input"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
-                <button
-                  type="submit"
-                  disabled={!translateInput.trim() || isTranslating}
-                  className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-xl text-xs font-semibold transition-all shadow-md shrink-0 flex items-center gap-1"
-                  title="Terjemahkan Teks"
-                >
-                  {isTranslating ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Sparkles className="w-3.5 h-3.5" />
-                  )}
-                  <span>Terjemah</span>
-                </button>
-              </form>
-            </div>
-          </>
-        )}
-      </section>
-
-          {/* ----------------------------------------------------------------------- */}
-          {/* BARIS BAWAH: CHAT REFERENSI TEKS (TETAP SAMA SEPERTI SEBELUMNYA)       */}
-          {/* ----------------------------------------------------------------------- */}
-          <section
-            className={`flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl transition-all duration-200 ${
-              bottomBoxMode === "minimized" ? "shrink-0" : "flex-1 min-h-0"
-            }`}
-          >
-            {/* Header Kolom Kiri */}
-            <div
-              onClick={() => {
-                if (bottomBoxMode === "minimized") handleBottomMode("normal");
-              }}
-              className={`shrink-0 bg-slate-900 border-b border-slate-800 p-2 sm:p-2.5 flex items-center justify-between ${
-                bottomBoxMode === "minimized" ? "cursor-pointer hover:bg-slate-800/60" : ""
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-sky-950 border border-sky-800/60 flex items-center justify-center text-sky-400">
-                  <BookOpen className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-xs sm:text-sm text-slate-100 flex items-center gap-1.5">
-                    Chat Referensi Teks
-                    <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-                      🔇 Tanpa Suara
-                    </span>
-                    {bottomBoxMode === "minimized" && (
-                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-amber-950/70 text-amber-300 border border-amber-800/50">
-                        Diminimalkan
-                      </span>
-                    )}
-                    {bottomBoxMode === "full" && (
-                      <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-sky-900/80 text-sky-200 border border-sky-700/60">
-                        Full
-                      </span>
-                    )}
-                  </h2>
-                  <p className="text-[10px] text-slate-400">
-                    Kaidah Nahwu/Shorof, tabel tasrif & mufradat
-                  </p>
-                </div>
-              </div>
-
-              {/* Tombol Kontrol: Minimize, Buka, Full */}
-              <div className="flex items-center bg-slate-950/90 p-0.5 rounded-lg border border-slate-800 text-[10px]" onClick={(e) => e.stopPropagation()}>
-                <button
-                  type="button"
-                  onClick={() => handleBottomMode("minimized")}
-                  className={`px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors ${
-                    bottomBoxMode === "minimized"
-                      ? "bg-amber-950/90 text-amber-300 font-bold border border-amber-800/50"
-                      : "text-slate-400 hover:text-slate-200"
-                  }`}
-                  title="Minimize kotak referensi"
-                >
-                  <Minus className="w-2.5 h-2.5" />
-                  <span className="hidden sm:inline">Min</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleBottomMode("normal")}
-                  className={`px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors ${
-                    bottomBoxMode === "normal"
-                      ? "bg-slate-800 text-sky-300 font-bold border border-slate-700"
-                      : "text-slate-400 hover:text-slate-200"
-                  }`}
-                  title="Buka normal (bagi dua kolom)"
-                >
-                  <Minimize2 className="w-2.5 h-2.5" />
-                  <span className="hidden sm:inline">Buka</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleBottomMode("full")}
-                  className={`px-1.5 py-0.5 rounded flex items-center gap-1 transition-colors ${
-                    bottomBoxMode === "full"
-                      ? "bg-sky-600 text-white font-bold shadow-sm"
-                      : "text-slate-400 hover:text-slate-200"
-                  }`}
-                  title="Tampilan layar penuh (kotak penerjemah minimize)"
-                >
-                  <Maximize2 className="w-2.5 h-2.5" />
-                  <span className="hidden sm:inline">Full</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Isi Konten Chat Referensi (Hanya Tampil Jika Tidak Diminimalkan) */}
-            {bottomBoxMode !== "minimized" && (
-              <>
-                {/* Message List Referensi dengan FormattedMessage (Format Rapih & Support Tabel) */}
-                <div className="flex-1 min-h-0 overflow-y-auto p-2.5 sm:p-3 space-y-3 text-xs sm:text-sm">
-                  {refMessages.length === 0 ? (
-                    <div className="h-full min-h-[140px] flex flex-col items-center justify-center p-3 text-center text-slate-400">
-                      <div className="w-8 h-8 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-center text-sky-400 mb-1.5 shadow-inner">
-                        <BookOpen className="w-4 h-4" />
-                      </div>
-                      <p className="text-xs font-semibold text-slate-200 mb-0.5">
-                        Chat Referensi Teks
-                      </p>
-                      <p className="text-[11px] text-slate-400 max-w-xs">
-                        Ketik pertanyaan kaidah Nahwu/Shorof, rumus tasrif, atau mufradat di bawah.
-                      </p>
-                    </div>
-                  ) : (
-                    refMessages.map((msg) => {
-                const isAi = msg.sender === "ai";
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex flex-col ${
-                      isAi ? "items-start w-full" : "items-end"
-                    }`}
-                  >
-                    <div
-                      className={`rounded-2xl p-3 shadow-md ${
-                        isAi
-                          ? "w-full bg-slate-950/80 border border-slate-800 text-slate-200 rounded-tl-sm"
-                          : "max-w-[90%] bg-sky-700 text-white rounded-tr-sm"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between text-[10px] opacity-75 mb-1.5 pb-1 border-b border-slate-800">
-                        <span className="font-semibold text-sky-300">
-                          {isAi ? "Marja' Lughawi (Referensi AI)" : "Anda"}
-                        </span>
-                        <span>{msg.timestamp}</span>
-                      </div>
-
-                      {/* Rendering via FormattedMessage: Rapih, Parsing Bold/Lists & Tabel Berbingkai */}
-                      <FormattedMessage
-                        content={msg.text}
-                        theme={isAi ? "sky" : "slate"}
-                      />
-                    </div>
-                  </div>
-                );
-              })
-            )}
-
-              {isRefLoading && (
-                <div className="flex items-center gap-2 p-2.5 bg-slate-950/60 border border-slate-800 rounded-xl text-xs text-sky-300">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-400" />
-                  <span>Menyusun kaidah referensi & tabel bahasa Arab...</span>
-                </div>
-              )}
-
-              <div ref={refMessagesEndRef} />
-            </div>
-
-            {/* Virtual Diacritics Pintas Harakat Kolom Referensi */}
-            <div className="shrink-0 p-1.5 bg-slate-950/90 border-t border-slate-800 flex items-center gap-1 overflow-x-auto">
-              <span className="text-[10px] text-slate-400 font-medium px-1 shrink-0">
-                Harakat:
-              </span>
-              <div className="flex items-center gap-1">
-                {ARABIC_SHORTCUTS.map((sc, i) => (
+                <div className="flex items-center gap-1 shrink-0">
+                  {/* Beralih Cepat Menu Lain */}
                   <button
-                    key={i}
                     type="button"
-                    onClick={() => insertRefArabicChar(sc.char)}
-                    title={sc.label}
-                    className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-slate-800 hover:bg-sky-700 hover:text-white text-slate-200 border border-slate-700 flex items-center justify-center font-serif text-xs sm:text-sm transition-colors"
+                    onClick={() =>
+                      setActiveLeftMenu(
+                        activeLeftMenu === "translate" ? "reference" : "translate"
+                      )
+                    }
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-semibold flex items-center gap-1 transition-colors"
+                    title={
+                      activeLeftMenu === "translate"
+                        ? "Beralih ke Chat Referensi"
+                        : "Beralih ke Penerjemah"
+                    }
                   >
-                    {sc.char}
+                    <ArrowLeftRight className="w-3 h-3 text-slate-400" />
+                    <span className="hidden sm:inline">
+                      {activeLeftMenu === "translate" ? "Referensi" : "Terjemah"}
+                    </span>
                   </button>
-                ))}
-              </div>
-            </div>
 
-                {/* Form Input Kolom Referensi */}
-                <div className="shrink-0 p-2 sm:p-2.5 bg-slate-900 border-t border-slate-800">
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleSendRefMessage();
-                    }}
-                    className="flex items-center gap-2"
+                  {/* Tombol Tutup Slider */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveLeftMenu(null)}
+                    className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                    title="Tutup Menu Ini"
                   >
-                    <input
-                      type="text"
-                      value={refInputText}
-                      onChange={(e) => setRefInputText(e.target.value)}
-                      placeholder="Tanyakan kaidah Nahwu, mufradat, tabel tasrif..."
-                      className="flex-1 bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl px-3 py-1.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-inner"
-                      disabled={isRefLoading}
-                    />
-                    <button
-                      type="submit"
-                      disabled={!refInputText.trim() || isRefLoading}
-                      className="p-1.5 sm:p-2 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-xl transition-all shadow-md shrink-0"
-                      title="Kirim Pertanyaan Referensi (Tanpa Suara)"
-                    >
-                      <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </button>
-                  </form>
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              </>
-            )}
-          </section>
-        </div>
+              </div>
 
+              {/* Konten 1: Penerjemah Indonesia - Arab */}
+              {activeLeftMenu === "translate" && (
+                <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                  {/* Sub-toolbar Arah Bahasa */}
+                  <div className="shrink-0 px-2.5 py-1.5 bg-slate-950/60 border-b border-slate-800/80 flex items-center justify-between text-xs">
+                    <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800/60">
+                      Arab & Latin
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newDir = translateDirection === "id-ar" ? "ar-id" : "id-ar";
+                        setTranslateDirection(newDir);
+                        if (translateResult) {
+                          setTranslateInput(
+                            newDir === "ar-id"
+                              ? translateResult.arabic
+                              : translateResult.indonesian
+                          );
+                        }
+                      }}
+                      className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] sm:text-[11px] font-semibold text-emerald-300 border border-slate-700 flex items-center gap-1 transition-colors"
+                      title="Tukar Arah Bahasa (Indonesia ⇄ Arab)"
+                    >
+                      <ArrowLeftRight className="w-3 h-3" />
+                      <span>{translateDirection === "id-ar" ? "ID ➔ AR" : "AR ➔ ID"}</span>
+                    </button>
+                  </div>
+
+                  {/* Area Hasil Terjemahan (Scrollable) */}
+                  <div className="flex-1 min-h-0 overflow-y-auto p-2.5 sm:p-3 space-y-2.5 text-xs">
+                    {isTranslating ? (
+                      <div className="h-full min-h-[140px] flex flex-col items-center justify-center gap-2 text-emerald-400 text-xs">
+                        <RefreshCw className="w-5 h-5 animate-spin text-emerald-400" />
+                        <span className="font-medium animate-pulse">
+                          Menerjemahkan teks berharakat & Latin...
+                        </span>
+                      </div>
+                    ) : translateError ? (
+                      <div className="p-2.5 bg-rose-950/40 border border-rose-800/60 rounded-xl text-rose-300 text-xs flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-semibold">{translateError}</p>
+                          <button
+                            type="button"
+                            onClick={() => handleTranslate()}
+                            className="mt-1 text-[11px] underline hover:text-white"
+                          >
+                            Coba lagi
+                          </button>
+                        </div>
+                      </div>
+                    ) : translateResult ? (
+                      <div className="space-y-2">
+                        {/* Kotak Tulisan Arab Berharakat */}
+                        <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-2.5 shadow-sm space-y-1.5">
+                          <div className="flex items-center justify-between text-[10px] pb-1 border-b border-slate-800/70">
+                            <span className="font-bold uppercase tracking-wider text-emerald-400">
+                              العربية (Teks Arab Berharakat):
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => playAudio(translateResult.arabic, "translate")}
+                                className="px-1.5 py-0.5 rounded bg-slate-800 hover:bg-emerald-700 text-emerald-300 hover:text-white border border-slate-700 flex items-center gap-1 transition-colors text-[10px]"
+                                title="Dengar pelafalan audio Arab"
+                              >
+                                <Volume2 className="w-3 h-3 text-emerald-400" />
+                                <span>Dengar</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleCopyTranslate(translateResult.arabic, "arabic")
+                                }
+                                className="p-1 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                                title="Salin Teks Arab"
+                              >
+                                {copiedTranslateType === "arabic" ? (
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div
+                            dir="rtl"
+                            className="font-serif text-lg sm:text-xl font-bold text-teal-100 leading-relaxed tracking-wide select-text text-right"
+                          >
+                            {translateResult.arabic}
+                          </div>
+                        </div>
+
+                        {/* Kotak Transliterasi Latin */}
+                        {translateResult.latin && (
+                          <div className="bg-slate-950/60 border border-slate-800/80 rounded-xl p-2 shadow-sm space-y-1">
+                            <div className="flex items-center justify-between text-[10px]">
+                              <span className="font-bold uppercase tracking-wider text-sky-400">
+                                Transliterasi Latin (Cara Baca):
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleCopyTranslate(translateResult.latin, "latin")
+                                }
+                                className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-sky-300 transition-colors"
+                                title="Salin Transliterasi Latin"
+                              >
+                                {copiedTranslateType === "latin" ? (
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                                <span>Salin</span>
+                              </button>
+                            </div>
+                            <p className="text-xs sm:text-sm text-sky-200/90 italic font-medium leading-relaxed select-text">
+                              {translateResult.latin}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Kotak Terjemahan Indonesia */}
+                        <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl p-2 text-xs">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+                            Arti / Terjemahan:
+                          </span>
+                          <p className="text-xs text-slate-200 font-medium leading-relaxed select-text">
+                            {translateResult.indonesian}
+                          </p>
+                        </div>
+
+                        {/* Catatan Kosakata / Kaidah (Bila Ada) */}
+                        {translateResult.notes && (
+                          <div className="text-[11px] text-emerald-300/90 bg-emerald-950/30 p-2 rounded-xl border border-emerald-900/50 leading-relaxed flex items-start gap-1.5">
+                            <Info className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                            <div>
+                              <span className="font-semibold text-emerald-300">Catatan Kaidah: </span>
+                              <span>{translateResult.notes}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Aksi Sinergi: Kirim / Tanya ke Chat Referensi */}
+                        <div className="flex items-center justify-end gap-1.5 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const prompt = `Jelaskan kaidah tata bahasa (Nahwu/Shorof), i'rab, dan kosa kata dari kalimat berikut:\n${translateResult.arabic}\n(${translateResult.latin}) - "${translateResult.indonesian}"`;
+                              setActiveLeftMenu("reference");
+                              handleSendRefMessage(prompt);
+                            }}
+                            className="text-[10px] px-2 py-0.5 rounded-lg bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-800/60 flex items-center gap-1 transition-colors"
+                            title="Kirim kalimat ini ke Chat Referensi untuk dibahas kaidahnya"
+                          >
+                            <BookOpen className="w-3 h-3" />
+                            <span>Bahas Kaidah di Referensi</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setTargetPractice({
+                                arabic: translateResult.arabic,
+                                latin: translateResult.latin,
+                                translation:
+                                  translateResult.indonesian || translateResult.arabic,
+                              });
+                              setLiveTranscript("");
+                              setValidationResult(null);
+                              setActiveMobileTab("center");
+                            }}
+                            className="text-[10px] px-2 py-0.5 rounded-lg bg-teal-950/80 hover:bg-teal-900 text-teal-300 border border-teal-800/60 flex items-center gap-1 transition-colors"
+                            title="Jadikan target kalimat latihan bicara di Ruang Bicara (Kolom Tengah)"
+                          >
+                            <Target className="w-3 h-3 text-teal-300" />
+                            <span>Latih di Ruang Bicara</span>
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-full min-h-[140px] flex flex-col items-center justify-center p-3 text-center text-slate-400">
+                        <div className="w-8 h-8 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-center text-emerald-400 mb-1.5 shadow-inner">
+                          <Languages className="w-4 h-4" />
+                        </div>
+                        <p className="text-xs font-semibold text-slate-200 mb-0.5">
+                          Penerjemah Indonesia ➔ Arab
+                        </p>
+                        <p className="text-[11px] text-slate-400 max-w-xs">
+                          Ketik kalimat di bawah untuk mendapatkan teks Arab berharakat lengkap dan bacaan Latin.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Harakat Pintas untuk Input Terjemahan jika Arah Arab ke ID */}
+                  {translateDirection === "ar-id" && (
+                    <div className="shrink-0 p-1 bg-slate-950/90 border-t border-slate-800 flex items-center gap-1 overflow-x-auto">
+                      <span className="text-[10px] text-slate-400 font-medium px-1 shrink-0">
+                        Harakat:
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {ARABIC_SHORTCUTS.map((sc, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => insertTranslateArabicChar(sc.char)}
+                            title={sc.label}
+                            className="w-5 h-5 rounded bg-slate-800 hover:bg-emerald-700 hover:text-white text-slate-200 border border-slate-700 flex items-center justify-center font-serif text-xs transition-colors"
+                          >
+                            {sc.char}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Input Form Translator */}
+                  <div className="shrink-0 p-2 bg-slate-900 border-t border-slate-800">
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleTranslate();
+                      }}
+                      className="flex items-center gap-1.5"
+                    >
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={translateInput}
+                          onChange={(e) => setTranslateInput(e.target.value)}
+                          placeholder={
+                            translateDirection === "id-ar"
+                              ? "Ketik kalimat Indonesia (mis: 'Saya sedang belajar')..."
+                              : "اكتب هنا بالعربية..."
+                          }
+                          dir={translateDirection === "ar-id" ? "rtl" : "ltr"}
+                          className="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded-xl px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 shadow-inner pr-7"
+                          disabled={isTranslating}
+                        />
+                        {translateInput && (
+                          <button
+                            type="button"
+                            onClick={() => setTranslateInput("")}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-500 hover:text-slate-300"
+                            title="Hapus input"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={!translateInput.trim() || isTranslating}
+                        className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-xl text-xs font-semibold transition-all shadow-md shrink-0 flex items-center gap-1"
+                        title="Terjemahkan Teks"
+                      >
+                        {isTranslating ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Sparkles className="w-3.5 h-3.5" />
+                        )}
+                        <span>Terjemah</span>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
+
+              {/* Konten 2: Chat Referensi Teks */}
+              {activeLeftMenu === "reference" && (
+                <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                  {/* Message List Referensi */}
+                  <div className="flex-1 min-h-0 overflow-y-auto p-2.5 sm:p-3 space-y-3 text-xs sm:text-sm">
+                    {refMessages.length === 0 ? (
+                      <div className="h-full min-h-[140px] flex flex-col items-center justify-center p-3 text-center text-slate-400">
+                        <div className="w-8 h-8 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-center text-sky-400 mb-1.5 shadow-inner">
+                          <BookOpen className="w-4 h-4" />
+                        </div>
+                        <p className="text-xs font-semibold text-slate-200 mb-0.5">
+                          Chat Referensi Teks
+                        </p>
+                        <p className="text-[11px] text-slate-400 max-w-xs">
+                          Ketik pertanyaan kaidah Nahwu/Shorof, rumus tasrif, atau mufradat di bawah.
+                        </p>
+                      </div>
+                    ) : (
+                      refMessages.map((msg) => {
+                        const isAi = msg.sender === "ai";
+                        return (
+                          <div
+                            key={msg.id}
+                            className={`flex flex-col ${
+                              isAi ? "items-start w-full" : "items-end"
+                            }`}
+                          >
+                            <div
+                              className={`rounded-2xl p-3 shadow-md ${
+                                isAi
+                                  ? "w-full bg-slate-950/80 border border-slate-800 text-slate-200 rounded-tl-sm"
+                                  : "max-w-[90%] bg-sky-700 text-white rounded-tr-sm"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between text-[10px] opacity-75 mb-1.5 pb-1 border-b border-slate-800">
+                                <span className="font-semibold text-sky-300">
+                                  {isAi ? "Marja' Lughawi (Referensi AI)" : "Anda"}
+                                </span>
+                                <span>{msg.timestamp}</span>
+                              </div>
+
+                              <FormattedMessage
+                                content={msg.text}
+                                theme={isAi ? "sky" : "slate"}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+
+                    {isRefLoading && (
+                      <div className="flex items-center gap-2 p-2.5 bg-slate-950/60 border border-slate-800 rounded-xl text-xs text-sky-300">
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-sky-400" />
+                        <span>Menyusun kaidah referensi & tabel bahasa Arab...</span>
+                      </div>
+                    )}
+
+                    <div ref={refMessagesEndRef} />
+                  </div>
+
+                  {/* Virtual Diacritics Pintas Harakat Kolom Referensi */}
+                  <div className="shrink-0 p-1.5 bg-slate-950/90 border-t border-slate-800 flex items-center gap-1 overflow-x-auto">
+                    <span className="text-[10px] text-slate-400 font-medium px-1 shrink-0">
+                      Harakat:
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {ARABIC_SHORTCUTS.map((sc, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => insertRefArabicChar(sc.char)}
+                          title={sc.label}
+                          className="w-5 h-5 sm:w-6 sm:h-6 rounded bg-slate-800 hover:bg-sky-700 hover:text-white text-slate-200 border border-slate-700 flex items-center justify-center font-serif text-xs sm:text-sm transition-colors"
+                        >
+                          {sc.char}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Form Input Kolom Referensi */}
+                  <div className="shrink-0 p-2 sm:p-2.5 bg-slate-900 border-t border-slate-800">
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSendRefMessage();
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <input
+                        type="text"
+                        value={refInputText}
+                        onChange={(e) => setRefInputText(e.target.value)}
+                        placeholder="Tanyakan kaidah Nahwu, mufradat, tabel tasrif..."
+                        className="flex-1 bg-slate-950 border border-slate-700 focus:border-sky-500 rounded-xl px-3 py-1.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500 shadow-inner"
+                        disabled={isRefLoading}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!refInputText.trim() || isRefLoading}
+                        className="p-1.5 sm:p-2 bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-xl transition-all shadow-md shrink-0"
+                        title="Kirim Pertanyaan Referensi (Tanpa Suara)"
+                      >
+                        <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         {/* ========================================================================= */}
         {/* 2. KOLOM TENGAH: RUANG BICARA SAYA                                        */}
         {/*    ATAS: REKOMENDASI JAWABAN (DAPAT DI ZOOM + / - FONT ARAB & LATIN)      */}
         {/*    BAWAH: KOTAK KONTROL AUDIO STICKY COMPACT                              */}
         {/* ========================================================================= */}
         <section
-          className={`lg:col-span-4 h-full min-h-0 flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl ${
+          className={`flex-1 h-full min-h-0 flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl ${
             activeMobileTab === "center" ? "flex" : "hidden lg:flex"
           }`}
         >
@@ -2910,7 +2899,7 @@ export default function ArabicLearningThreeColumns() {
         {/* 3. KOLOM PALING KANAN: MUDARRIS AI (STICKY AVATAR + SCROLLABLE TEXT)       */}
         {/* ========================================================================= */}
         <section
-          className={`lg:col-span-4 h-full min-h-0 flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl ${
+          className={`flex-1 h-full min-h-0 flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl ${
             activeMobileTab === "right" ? "flex" : "hidden lg:flex"
           }`}
         >
