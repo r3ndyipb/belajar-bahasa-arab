@@ -2752,9 +2752,55 @@ export default function ArabicLearningThreeColumns() {
 
             {/* Avatar AI & Kontrol Pemutar Audio */}
             <div className="p-2 sm:p-2.5 bg-slate-950/40">
-              {/* Baris Utama: Kontrol Audio di Kiri, Avatar Kotak Beradius di Kanan */}
-              <div className="flex items-stretch gap-2.5">
-                {/* 1. Kiri: Kotak Kontrol Pemutar Audio (Dipindahkan ke kiri avatar) */}
+              {/* Baris Utama: Avatar Lingkaran di Kiri (Tanpa Wording), Kontrol Audio di Kanan */}
+              <div className="flex items-center gap-2.5">
+                {/* 1. Kiri: Avatar Lingkaran AI (Cukup Lingkaran Saja Tanpa Wording) */}
+                <div className="relative shrink-0 flex items-center justify-center">
+                  <div
+                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-2 transition-all duration-300 shadow-md ${
+                      isAiSpeaking
+                        ? "border-emerald-400 bg-emerald-950/80 ring-4 ring-emerald-500/25 scale-105"
+                        : isAiAudioLoading
+                        ? "border-teal-400 bg-teal-950/60 ring-2 ring-teal-500/20 animate-pulse"
+                        : isAiThinking
+                        ? "border-amber-400 bg-amber-950/50 ring-2 ring-amber-500/20 animate-pulse"
+                        : "border-slate-800 bg-slate-900/90 hover:border-slate-700"
+                    }`}
+                    title={
+                      isAiSpeaking
+                        ? "Mudarris AI sedang melafalkan kalam"
+                        : isAiAudioLoading
+                        ? "Memuat audio kalam..."
+                        : isAiThinking
+                        ? "AI sedang menyusun balasan..."
+                        : "Mudarris AI siap bicara"
+                    }
+                  >
+                    <span className="text-xl sm:text-2xl select-none leading-none">
+                      {isAiSpeaking ? "🗣️" : isAiAudioLoading ? "🔊" : isAiThinking ? "💭" : "🗣️"}
+                    </span>
+                  </div>
+
+                  {/* Status Ping Dot di Tepi Lingkaran */}
+                  {(isAiSpeaking || isAiAudioLoading || isAiThinking) && (
+                    <span className="absolute top-0 right-0 flex h-3.5 w-3.5">
+                      <span
+                        className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                          isAiSpeaking ? "bg-emerald-400" : "bg-amber-400"
+                        }`}
+                      />
+                      <span
+                        className={`relative inline-flex rounded-full h-3.5 w-3.5 ${
+                          isAiSpeaking
+                            ? "bg-emerald-500 border-2 border-slate-900"
+                            : "bg-amber-500 border-2 border-slate-900"
+                        }`}
+                      />
+                    </span>
+                  )}
+                </div>
+
+                {/* 2. Kanan: Kotak Kontrol Pemutar Audio */}
                 <div className="flex-1 min-w-0 flex flex-col justify-between gap-1.5 px-2.5 py-2 rounded-xl bg-slate-950/90 border border-slate-800 text-xs shadow-sm">
                   <div className="flex items-center justify-between gap-1.5">
                     <button
@@ -2768,13 +2814,13 @@ export default function ArabicLearningThreeColumns() {
                           playAudio(currentAiSpeech.arabic, "ai-speech");
                         }
                       }}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold transition-all ${
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] sm:text-[11px] font-semibold transition-all ${
                         isAiSpeaking &&
                         (playingAudioId === "ai-speech" || !playingAudioId)
                           ? "bg-emerald-500 text-white shadow-md animate-pulse"
                           : "bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700"
                       }`}
-                      title="Putar ulang pelafalan kalam bahasa Arab"
+                      title="Dengarkan ulang pelafalan bahasa Arab dari Mudarris AI"
                     >
                       {isAiSpeaking &&
                       (playingAudioId === "ai-speech" || !playingAudioId) ? (
@@ -2785,7 +2831,7 @@ export default function ArabicLearningThreeColumns() {
                       ) : (
                         <>
                           <Volume2 className="w-3.5 h-3.5" />
-                          <span>Putar Ulang</span>
+                          <span>Dengar Bahasa Arab</span>
                         </>
                       )}
                     </button>
@@ -2811,57 +2857,6 @@ export default function ArabicLearningThreeColumns() {
                       <span>Autoplay</span>
                     </label>
                   </div>
-                </div>
-
-                {/* 2. Kanan: Kotak Avatar Mudarris AI (Kotak Radius Saja, Bukan Lingkaran Gepeng) */}
-                <div className="relative shrink-0 flex items-stretch">
-                  <div
-                    className={`min-w-[110px] sm:min-w-[125px] px-3.5 py-2 rounded-xl flex flex-col items-center justify-center border-2 transition-all duration-300 shadow-md ${
-                      isAiSpeaking
-                        ? "border-emerald-400 bg-emerald-950/70 ring-2 ring-emerald-500/20"
-                        : isAiAudioLoading
-                        ? "border-teal-400 bg-teal-950/50 ring-2 ring-teal-500/20 animate-pulse"
-                        : isAiThinking
-                        ? "border-amber-400 bg-amber-950/40 ring-2 ring-amber-500/20 animate-pulse"
-                        : "border-slate-800 bg-slate-900/90 hover:border-slate-700"
-                    }`}
-                  >
-                    <div className="font-serif text-base sm:text-lg text-emerald-300 font-bold mb-0.5 tracking-wide flex items-center justify-center gap-1.5">
-                      {isAiSpeaking && <span className="text-sm">🗣️</span>}
-                      {isAiAudioLoading && <span className="text-sm">🔊</span>}
-                      {isAiThinking && <span className="text-sm">💭</span>}
-                      <span>مُدَرِّس</span>
-                    </div>
-                    <span className="text-[9px] sm:text-[10px] font-semibold text-emerald-200">
-                      {isAiSpeaking
-                        ? "Melafalkan"
-                        : isAiAudioLoading
-                        ? "Audio..."
-                        : isAiThinking
-                        ? "Menyusun..."
-                        : "Siap Bicara"}
-                    </span>
-                  </div>
-
-                  {/* Status Ping */}
-                  {(isAiSpeaking || isAiAudioLoading || isAiThinking) && (
-                    <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                      <span
-                        className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                          isAiSpeaking
-                            ? "bg-emerald-400"
-                            : "bg-amber-400"
-                        }`}
-                      />
-                      <span
-                        className={`relative inline-flex rounded-full h-3 w-3 ${
-                          isAiSpeaking
-                            ? "bg-emerald-500"
-                            : "bg-amber-500"
-                        }`}
-                      />
-                    </span>
-                  )}
                 </div>
               </div>
 
@@ -2935,10 +2930,55 @@ export default function ArabicLearningThreeColumns() {
               </div>
 
               {/* A. TULISAN BAHASA ARAB YANG AI SEDANG BICARAKAN */}
-              <div className="space-y-0.5">
-                <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">
-                  العربية (Teks Arab Berharakat):
-                </span>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                    <span>العربية (Teks Arab Berharakat):</span>
+                  </span>
+
+                  {/* Tombol Dengar Bahasa Arab */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (
+                        isAiSpeaking &&
+                        (playingAudioId === "ai-speech" || !playingAudioId)
+                      ) {
+                        stopAudio();
+                      } else {
+                        playAudio(currentAiSpeech.arabic, "ai-speech");
+                      }
+                    }}
+                    className={`text-[10px] sm:text-[11px] px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
+                      isAiSpeaking &&
+                      (playingAudioId === "ai-speech" || !playingAudioId)
+                        ? "bg-emerald-500 text-white shadow-emerald-950/50 animate-pulse"
+                        : isAiAudioLoading && playingAudioId === "ai-speech"
+                        ? "bg-teal-900/60 text-teal-300 border border-teal-700/60"
+                        : "bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 hover:text-white border border-emerald-700/60"
+                    }`}
+                    title="Dengarkan ulang pelafalan bahasa Arab dari Mudarris AI"
+                  >
+                    {isAiSpeaking &&
+                    (playingAudioId === "ai-speech" || !playingAudioId) ? (
+                      <>
+                        <VolumeX className="w-3.5 h-3.5" />
+                        <span>Hentikan</span>
+                      </>
+                    ) : isAiAudioLoading && playingAudioId === "ai-speech" ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin text-teal-300" />
+                        <span>Memuat...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Dengar Bahasa Arab</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
                 <div
                   dir="rtl"
                   style={{ fontSize: `${Math.max(18, arabicFontSize)}px` }}
@@ -2947,6 +2987,7 @@ export default function ArabicLearningThreeColumns() {
                   {currentAiSpeech.arabic}
                 </div>
               </div>
+
 
               {/* B. BAWAH NYA LATIN */}
               <div className="space-y-0.5">
