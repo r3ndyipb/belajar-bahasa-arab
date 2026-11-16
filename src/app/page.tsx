@@ -2693,68 +2693,13 @@ export default function ArabicLearningThreeColumns() {
             activeMobileTab === "right" ? "flex" : "hidden lg:flex"
           }`}
         >
-          {/* 1. KOTAK MUDARRIS AI STICKY DI ATAS (Header, Avatar Animasi, Status, Waveform, Audio Player) */}
+          {/* 1. KOTAK MUDARRIS AI STICKY DI ATAS (Avatar Animasi Flat Icon & Kontrol Audio) */}
           <div className="shrink-0 bg-slate-900/95 border-b border-slate-800 backdrop-blur-md shadow-md">
-            {/* Header Kolom Kanan */}
-            <div className="p-2 sm:p-2.5 flex items-center justify-between border-b border-slate-800/60">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
-                  <Bot className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <h2 className="font-bold text-xs sm:text-sm text-slate-100 flex items-center gap-1.5 flex-wrap">
-                    Mudarris AI (Ustadz)
-                    <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                      Kalam Berharakat
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSelectedScenarioId(activeScenarioId);
-                        setCustomScenarioPrompt(activeScenarioPrompt);
-                        setShowScenarioModal(true);
-                      }}
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/60 flex items-center gap-1 transition-colors"
-                      title="Klik untuk mengubah suasana atau skenario percakapan"
-                    >
-                      <span>{currentScenario.emoji}</span>
-                      <span>{currentScenario.name}</span>
-                      <SlidersHorizontal className="w-2.5 h-2.5 opacity-70" />
-                    </button>
-                  </h2>
-                </div>
-              </div>
-
-              {/* Status Mini / Badge */}
-              <div className="flex items-center gap-1.5 text-[10px]">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    isAiSpeaking
-                      ? "bg-emerald-400 animate-ping"
-                      : isAiAudioLoading
-                      ? "bg-teal-400 animate-pulse"
-                      : isAiThinking
-                      ? "bg-amber-400 animate-pulse"
-                      : "bg-emerald-500"
-                  }`}
-                />
-                <span className="text-slate-400 font-medium">
-                  {isAiSpeaking
-                    ? "Melafalkan"
-                    : isAiAudioLoading
-                    ? "Audio..."
-                    : isAiThinking
-                    ? "Menyusun..."
-                    : "Siap Bicara"}
-                </span>
-              </div>
-            </div>
-
             {/* Avatar AI & Kontrol Pemutar Audio */}
             <div className="p-2 sm:p-2.5 bg-slate-950/40">
-              {/* Baris Utama: Avatar Lingkaran di Kiri (Tanpa Wording), Kontrol Audio di Kanan */}
+              {/* Baris Utama: Avatar Lingkaran di Kiri (Flat Icon Tanpa Wording), Kontrol Audio di Kanan */}
               <div className="flex items-center gap-2.5">
-                {/* 1. Kiri: Avatar Lingkaran AI (Cukup Lingkaran Saja Tanpa Wording) */}
+                {/* 1. Kiri: Avatar Lingkaran AI (Flat Speaking Head Icon Saja Tanpa Wording) */}
                 <div className="relative shrink-0 flex items-center justify-center">
                   <div
                     className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center border-2 transition-all duration-300 shadow-md ${
@@ -2776,9 +2721,37 @@ export default function ArabicLearningThreeColumns() {
                         : "Mudarris AI siap bicara"
                     }
                   >
-                    <span className="text-xl sm:text-2xl select-none leading-none">
-                      {isAiSpeaking ? "🗣️" : isAiAudioLoading ? "🔊" : isAiThinking ? "💭" : "🗣️"}
-                    </span>
+                    {/* Flat Vector Icon Kepala Bicara */}
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className={`w-6 h-6 transition-transform ${
+                        isAiSpeaking
+                          ? "text-emerald-300 scale-110"
+                          : isAiAudioLoading
+                          ? "text-teal-300"
+                          : isAiThinking
+                          ? "text-amber-300"
+                          : "text-emerald-400"
+                      }`}
+                    >
+                      {/* Kepala / Siluet Profil Datar */}
+                      <circle cx="9" cy="7" r="4" />
+                      <path d="M3 19v-1.5a4.5 4.5 0 0 1 7-3.7" />
+                      {/* Gelombang Suara Bicara Datar */}
+                      <path
+                        d="M16 8a4 4 0 0 1 0 6"
+                        className={isAiSpeaking ? "animate-pulse" : ""}
+                      />
+                      <path
+                        d="M19.5 5.5a8 8 0 0 1 0 11"
+                        className={isAiSpeaking ? "animate-pulse" : "opacity-60"}
+                      />
+                    </svg>
                   </div>
 
                   {/* Status Ping Dot di Tepi Lingkaran */}
