@@ -157,7 +157,10 @@ interface ParsedAiSpeech {
 
 interface WordMatch {
   word: string;
+  cleanWord: string;
   matched: boolean;
+  isPlaceholder?: boolean;
+  spokenWord?: string;
 }
 
 interface ValidationResult {
@@ -210,7 +213,236 @@ const levenshteinDistance = (a: string, b: string): number => {
   return d[m][n];
 };
 
-// Validasi ucapan Arab terhadap target kalimat
+// Pemetaan transliterasi Latin umum ke tulisan Arab untuk toleransi input suara Latin
+const LATIN_TO_ARABIC_MAP: Record<string, string> = {
+  ismi: "اسمي",
+  ismee: "اسمي",
+  ismy: "اسمي",
+  ana: "انا",
+  anta: "انت",
+  anti: "انتي",
+  huwa: "هو",
+  hiya: "هي",
+  nahnu: "نحن",
+  naam: "نعم",
+  "na'am": "نعم",
+  laa: "لا",
+  la: "لا",
+  marhaban: "مرحبا",
+  ahlan: "اهلا",
+  sahlan: "سهلا",
+  kaifa: "كيف",
+  kayfa: "كيف",
+  haluk: "حالك",
+  haluka: "حالك",
+  haluki: "حالك",
+  bikhair: "بخير",
+  bikhayr: "بخير",
+  syukran: "شكرا",
+  shukran: "شكرا",
+  afwan: "عفوا",
+  assalam: "السلام",
+  assalamu: "السلام",
+  alaikum: "عليكم",
+  wa: "و",
+  alhamdulillah: "الحمد لله",
+  hamdu: "الحمد",
+  lillah: "لله",
+  ustadz: "استاذ",
+  ustadh: "استاذ",
+  tholib: "طالب",
+  talib: "طالب",
+  min: "من",
+  ayna: "اين",
+  aina: "اين",
+  fii: "في",
+  fi: "في",
+  ila: "الى",
+};
+
+// Deteksi apakah sebuah token adalah placeholder variabel nama / instruksi (seperti [Namamu], [Sebutkan namamu], ...)
+const isPlaceholderToken = (token: string): boolean => {
+  const t = token.trim();
+  if (/^[\[\(\{].*[\]\)\}]$/.test(t)) return true;
+  if (/^\.{2,}|…$/.test(t)) return true;
+  const lower = t.toLowerCase().replace(/[^a-z]/g, "");
+  if (["namamu", "sebutkan", "nama", "anda", "kamu", "isi", "opsional"].includes(lower)) return true;
+  if (t.includes("اسمك") || t.includes("فلان")) return true;
+  return false;
+};
+
+// Evaluasi satu cabang kalimat target (tanpa pemisah 'atau')
+const validateSingleTargetBranch = (
+  spoken: string,
+  targetBranch: string
+): ValidationResult => {
+  const normSpoken = normalizeArabic(spoken);
+  const spokenWordsRaw = spoken.split(/\s+/).filter(Boolean);
+
+  const spokenTokens = spokenWordsRaw.map((w) => {
+    const clean = w.replace(/[،؟!.?:;,"'()\[\]{}]/g, "").trim();
+    const lower = clean.toLowerCase();
+    const mapped = LATIN_TO_ARABIC_MAP[lower];
+    const norm = mapped || normalizeArabic(clean) || lower;
+    return { raw: clean, norm, used: false };
+  });
+
+  // Ekstrak token kalimat target: tanda kurung, ellipsis, atau kata Arab/Latin
+  const rawTokens =
+    targetBranch.match(
+      /\[[^\]]+\]|\([^\)]+\)|\{[^\}]+\}|\.{3,}|…|[\w\u0600-\u06FF]+/g
+    ) || [];
+
+  // Singkirkan kata hubung alternatif mandiri seperti "atau", "أو", "/", "|"
+  const filteredTokens = rawTokens.filter((t) => {
+    const clean = t.replace(/[،؟!.?:;,"'()\[\]{}]/g, "").trim().toLowerCase();
+    return (
+      clean &&
+      clean !== "atau" &&
+      clean !== "أو" &&
+      clean !== "/" &&
+      clean !== "|"
+    );
+  });
+
+  const tokenAnalysis = filteredTokens.map((rawT) => {
+    const isHolder = isPlaceholderToken(rawT);
+    const cleanWord = rawT.replace(/[\[\]\(\)\{\}،؟!.?:;,"'#*_]/g, "").trim();
+    return { rawT, cleanWord, isHolder, isNameSlot: false, customSpokenName: "" };
+  });
+
+  let matchedCoreCount = 0;
+  let totalCoreWords = 0;
+
+  // Fase 1: Cocokkan kata-kata inti Arab (non-placeholder)
+  const coreResults = new Map<number, boolean>();
+  tokenAnalysis.forEach((tokenObj, idx) => {
+    const { cleanWord, isHolder } = tokenObj;
+    if (!isHolder && cleanWord) {
+      totalCoreWords++;
+      const normW = normalizeArabic(cleanWord);
+      let matched = false;
+
+      for (const spk of spokenTokens) {
+        if (!spk.used) {
+          if (spk.norm === normW) {
+            matched = true;
+            spk.used = true;
+            break;
+          }
+          if (
+            normW.length > 2 &&
+            Math.abs(spk.norm.length - normW.length) <= 1
+          ) {
+            if (levenshteinDistance(spk.norm, normW) <= 1) {
+              matched = true;
+              spk.used = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!matched && normSpoken.includes(normW)) {
+        matched = true;
+      }
+
+      // Toleransi slot nama setelah "اسمي" atau "هو": jika target memiliki contoh nama (misal زيد)
+      // dan pengguna menyebutkan nama aslinya (misal Rendy)
+      if (!matched) {
+        const prevObj = idx > 0 ? tokenAnalysis[idx - 1] : null;
+        const prevNorm = prevObj ? normalizeArabic(prevObj.cleanWord) : "";
+        if (prevNorm === "اسمي" || prevNorm === "هو") {
+          for (const spk of spokenTokens) {
+            if (!spk.used) {
+              matched = true;
+              spk.used = true;
+              tokenObj.isNameSlot = true;
+              tokenObj.customSpokenName = spk.raw;
+              break;
+            }
+          }
+        }
+      }
+
+      if (matched) {
+        matchedCoreCount++;
+      }
+
+      coreResults.set(idx, matched);
+    }
+  });
+
+  // Fase 2: Bangun urutan kata wordMatches secara berurutan sesuai kalimat target
+  const hasCoreSuccess = totalCoreWords === 0 || matchedCoreCount > 0;
+  const wordMatches: WordMatch[] = tokenAnalysis.map((tokenObj, idx) => {
+    const { rawT, cleanWord, isHolder, isNameSlot, customSpokenName } = tokenObj;
+    if (isHolder) {
+      let slotVal = "";
+      if (hasCoreSuccess) {
+        for (const spk of spokenTokens) {
+          if (!spk.used) {
+            slotVal = spk.raw;
+            spk.used = true;
+            break;
+          }
+        }
+      }
+      const displayLabel = slotVal
+        ? `[Namamu: ${slotVal}]`
+        : rawT.startsWith("[")
+        ? rawT
+        : `[${rawT}]`;
+
+      return {
+        word: displayLabel,
+        cleanWord: slotVal || "اسمي",
+        matched: hasCoreSuccess,
+        isPlaceholder: true,
+        spokenWord: slotVal,
+      };
+    } else if (isNameSlot && customSpokenName) {
+      return {
+        word: `[Nama: ${customSpokenName}] (${rawT})`,
+        cleanWord: customSpokenName,
+        matched: true,
+        isPlaceholder: true,
+        spokenWord: customSpokenName,
+      };
+    } else {
+      const matched = !!coreResults.get(idx);
+      return {
+        word: rawT,
+        cleanWord,
+        matched,
+        isPlaceholder: false,
+      };
+    }
+  });
+
+  const score =
+    totalCoreWords === 0
+      ? 100
+      : Math.round((matchedCoreCount / totalCoreWords) * 100);
+
+  const isValid =
+    score >= 70 ||
+    (totalCoreWords > 0 && matchedCoreCount === totalCoreWords);
+
+  return {
+    isValid,
+    score,
+    matchedCount:
+      matchedCoreCount +
+      wordMatches.filter((w) => w.isPlaceholder && w.matched).length,
+    totalWords: wordMatches.length,
+    wordMatches,
+    spokenClean: normSpoken || spoken,
+    targetClean: normalizeArabic(targetBranch),
+  };
+};
+
+// Validasi ucapan Arab terhadap target kalimat (dengan dukungan alternatif "atau", "/" & placeholder)
 const validateArabicSpeech = (
   spoken: string,
   target: string
@@ -218,7 +450,7 @@ const validateArabicSpeech = (
   const normSpoken = normalizeArabic(spoken);
   const normTarget = normalizeArabic(target);
 
-  if (!normSpoken) {
+  if (!spoken || !spoken.trim()) {
     return {
       isValid: false,
       score: 0,
@@ -230,64 +462,35 @@ const validateArabicSpeech = (
     };
   }
 
-  const spokenTokens = normSpoken.split(" ").filter(Boolean);
-  const targetTokens = normTarget.split(" ").filter(Boolean);
-  const rawTargetTokens = target
-    .replace(/[،؟!.?:;,"'()]/g, "")
-    .split(/\s+/)
-    .filter(Boolean);
+  // Pisahkan kemungkinan variasi alternatif yang digabungkan dengan "atau", "أو", "/", "|"
+  const rawParts = target.split(/\s+(?:atau|أو)\s+|\s+[/|]\s+/i);
+  const branches = rawParts.map((p) => p.trim()).filter(Boolean);
+  const candidates = branches.length > 0 ? branches : [target];
 
-  const wordMatches: WordMatch[] = rawTargetTokens.map((rawWord) => {
-    const normW = normalizeArabic(rawWord);
-    let matched = false;
-    for (const spkW of spokenTokens) {
-      if (spkW === normW) {
-        matched = true;
-        break;
-      }
-      if (normW.length > 2 && Math.abs(spkW.length - normW.length) <= 1) {
-        if (levenshteinDistance(spkW, normW) <= 1) {
-          matched = true;
-          break;
-        }
-      }
+  let bestResult: ValidationResult | null = null;
+
+  for (const branch of candidates) {
+    const result = validateSingleTargetBranch(spoken, branch);
+    if (
+      !bestResult ||
+      (result.isValid && !bestResult.isValid) ||
+      result.score > bestResult.score
+    ) {
+      bestResult = result;
     }
-    // Cek juga jika kata tergabung dalam partikel (misal: والحمد لله vs والحمدلله)
-    if (!matched && normSpoken.replace(/\s+/g, "").includes(normW)) {
-      matched = true;
+  }
+
+  return (
+    bestResult || {
+      isValid: false,
+      score: 0,
+      matchedCount: 0,
+      totalWords: 0,
+      wordMatches: [],
+      spokenClean: normSpoken,
+      targetClean: normTarget,
     }
-    return { word: rawWord, matched };
-  });
-
-  const matchedCount = wordMatches.filter((w) => w.matched).length;
-  const tokenScore =
-    targetTokens.length > 0
-      ? Math.round((matchedCount / targetTokens.length) * 100)
-      : 0;
-
-  // Skor berbasis kontinuitas karakter tanpa spasi untuk mengantisipasi penggabungan partikel
-  const noSpaceTarget = normTarget.replace(/\s+/g, "");
-  const noSpaceSpoken = normSpoken.replace(/\s+/g, "");
-  const maxLen = Math.max(noSpaceTarget.length, noSpaceSpoken.length);
-  const dist = levenshteinDistance(noSpaceSpoken, noSpaceTarget);
-  const charScore =
-    maxLen > 0 ? Math.round(Math.max(0, (1 - dist / maxLen) * 100)) : 0;
-
-  const finalScore = Math.max(tokenScore, charScore);
-  // Ucapan valid jika skor >= 70% atau semua kata kunci cocok
-  const isValid =
-    finalScore >= 70 ||
-    (targetTokens.length > 0 && matchedCount === targetTokens.length);
-
-  return {
-    isValid,
-    score: finalScore,
-    matchedCount,
-    totalWords: targetTokens.length,
-    wordMatches,
-    spokenClean: normSpoken,
-    targetClean: normTarget,
-  };
+  );
 };
 
 // Efek suara sintetis instan berbasis Web Audio API (tanpa dependensi file eksternal)
@@ -449,6 +652,7 @@ export default function ArabicLearningThreeColumns() {
   // Ukuran font untuk Teks Rekomendasi di Kolom Tengah (Arab & Latin)
   const [arabicFontSize, setArabicFontSize] = useState<number>(24); // 14px - 48px
   const [latinFontSize, setLatinFontSize] = useState<number>(13); // 10px - 24px
+  const [evalFontSize, setEvalFontSize] = useState<number>(18); // 12px - 34px: Ukuran font evaluasi kata per kata
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
 
   // ==========================================
@@ -689,15 +893,47 @@ export default function ArabicLearningThreeColumns() {
       // Cari pola Opsi / Item
       const optionBlocks = recText.split(/(?:Opsi|\*|\-)\s*\d+[:.]/i).filter((b) => b.trim().length > 0);
       for (const block of optionBlocks) {
-        const ar = block.match(/(?:Arab|عربي)[^\n:]*[:\n]\s*([^\n#]+)/i);
+        const ar = block.match(/(?:Arab|\u0639\u0631\u0628\u064a)[^\n:]*[:\n]\s*([^\n#]+)/i);
         const lt = block.match(/(?:Latin|Transliterasi)[^\n:]*[:\n]\s*([^\n#]+)/i);
         const tr = block.match(/(?:Arti|Terjemahan)[^\n:]*[:\n]\s*([^\n#]+)/i);
         if (ar && ar[1]) {
-          recommendations.push({
-            arabic: ar[1].replace(/[*_#`~]/g, "").trim(),
-            latin: lt ? lt[1].replace(/[*_#`~]/g, "").trim() : "",
-            translation: tr ? tr[1].replace(/[*_#`~"']/g, "").trim() : "",
-          });
+          const rawAr = ar[1].replace(/[*_#`~]/g, "").trim();
+          const rawLt = lt ? lt[1].replace(/[*_#`~]/g, "").trim() : "";
+          const rawTr = tr ? tr[1].replace(/[*_#`~"']/g, "").trim() : "";
+
+          // Jika kalimat Arab mengandung alternatif gabungan ("atau", "أو", "/"), pisahkan menjadi opsi bersih tersendiri
+          if (/\s+(?:atau|\u0623\u0648)\s+|\s+[/|]\s+/i.test(rawAr)) {
+            const arParts = rawAr
+              .split(/\s+(?:atau|\u0623\u0648)\s+|\s+[/|]\s+/i)
+              .map((s) => s.trim())
+              .filter(Boolean);
+            const ltParts = rawLt
+              ? rawLt
+                  .split(/\s+(?:atau|[/|])\s+/i)
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : [];
+            const trParts = rawTr
+              ? rawTr
+                  .split(/\s+(?:atau|[/|])\s+/i)
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+              : [];
+
+            arParts.forEach((partAr, idx) => {
+              recommendations.push({
+                arabic: partAr,
+                latin: ltParts[idx] || rawLt,
+                translation: trParts[idx] || rawTr,
+              });
+            });
+          } else {
+            recommendations.push({
+              arabic: rawAr,
+              latin: rawLt,
+              translation: rawTr,
+            });
+          }
         }
       }
     }
@@ -1281,65 +1517,6 @@ export default function ArabicLearningThreeColumns() {
 
   return (
     <div className="relative flex flex-col h-screen max-h-screen overflow-hidden bg-slate-950 text-slate-100 font-sans selection:bg-emerald-500 selection:text-white">
-      {/* ========================================================================= */}
-      {/* FLOATING ACTION UTILITY: FULLSCREEN, BANTUAN SUARA & INFO (TANPA HEADER) */}
-      {/* ========================================================================= */}
-      <div className="fixed top-2.5 right-3.5 z-40 flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md border border-slate-700/70 p-1 rounded-xl shadow-xl">
-        {/* Tombol Layar Penuh (Icon Only - Tanpa Wording) */}
-        <button
-          onClick={toggleFullscreen}
-          className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
-          title={isFullscreen ? "Keluar Layar Penuh (Esc)" : "Mode Layar Penuh"}
-          aria-label={isFullscreen ? "Keluar Layar Penuh" : "Mode Layar Penuh"}
-        >
-          {isFullscreen ? (
-            <Minimize2 className="w-4 h-4 text-emerald-400" />
-          ) : (
-            <Maximize2 className="w-4 h-4 text-slate-300" />
-          )}
-        </button>
-
-        <div className="h-4 w-px bg-slate-700/60 my-auto" />
-
-        {/* Tombol Pengaturan Suasana & Skenario Percakapan (Kantor, Sekolah, Rumah, Jual Beli, Belajar Bicara, Kustom) */}
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedScenarioId(activeScenarioId);
-            setCustomScenarioPrompt(activeScenarioPrompt);
-            setShowScenarioModal(true);
-          }}
-          className="p-1.5 rounded-lg hover:bg-slate-800 text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
-          title={`Pengaturan Suasana Percakapan: ${currentScenario.name} (Kantor, Sekolah, Rumah, Jual Beli, Belajar Bicara, Kustom)`}
-          aria-label="Pengaturan Suasana & Skenario Percakapan"
-        >
-          <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
-          <span className="text-xs leading-none" title={`Suasana Aktif: ${currentScenario.name}`}>
-            {currentScenario.emoji}
-          </span>
-        </button>
-
-        {/* Tombol Panduan Suara & Diagnosis Mic */}
-        <button
-          onClick={() => setShowVoiceHelpModal(true)}
-          className="p-1.5 rounded-lg hover:bg-slate-800 text-amber-400 hover:text-amber-300 transition-colors"
-          title="Panduan Suara & Diagnosis Mic"
-          aria-label="Panduan Suara"
-        >
-          <AlertCircle className="w-4 h-4" />
-        </button>
-
-        {/* Tombol Penjelasan Model AI & Info Aplikasi */}
-        <button
-          onClick={() => setShowInfoModal(true)}
-          className="p-1.5 rounded-lg hover:bg-slate-800 text-teal-300 hover:text-teal-200 transition-colors"
-          title="Penjelasan Model AI & Info Aplikasi"
-          aria-label="Penjelasan Model AI"
-        >
-          <Info className="w-4 h-4" />
-        </button>
-      </div>
-
       {/* NAVIGASI TAB UNTUK LAYAR MOBILE (< lg) */}
       <div className="lg:hidden shrink-0 flex items-center justify-between p-1.5 bg-slate-900/90 border-b border-slate-800 text-xs z-30">
         <div className="flex items-center gap-1.5">
@@ -2500,27 +2677,95 @@ export default function ArabicLearningThreeColumns() {
 
                 {/* Analisis Kata-per-Kata (Word-by-word Breakdown) */}
                 {validationResult.wordMatches && validationResult.wordMatches.length > 0 && (
-                  <div className="pt-1 border-t border-slate-800/80 space-y-1">
-                    <div className="flex items-center justify-between text-[9px] text-slate-400">
-                      <span className="uppercase font-bold">Evaluasi Kata:</span>
-                      <span className="font-mono">
-                        {validationResult.matchedCount} dari {validationResult.totalWords} kata cocok
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-1" dir="rtl">
-                      {validationResult.wordMatches.map((wm, i) => (
-                        <span
-                          key={i}
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-serif border transition-all ${
-                            wm.matched
-                              ? "bg-emerald-900/60 text-emerald-200 border-emerald-600/60"
-                              : "bg-rose-900/70 text-rose-100 border-rose-500/70 animate-pulse font-bold"
-                          }`}
-                          title={wm.matched ? "Pelafalan benar" : "Kata ini salah atau terlewat saat bicara"}
-                        >
-                          {wm.word} {wm.matched ? "✓" : "✗"}
+                  <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                    {/* Header: Evaluasi Kata + Tombol Perbesar / Perkecil Ukuran Font */}
+                    <div className="flex items-center justify-between gap-1 text-xs text-slate-400">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="uppercase font-bold text-[10px] text-slate-300">
+                          Evaluasi Kata:
                         </span>
-                      ))}
+                        <span className="font-mono text-[10px] bg-slate-900/90 text-teal-300 px-1.5 py-0.5 rounded border border-slate-700/80">
+                          {validationResult.matchedCount} dari {validationResult.totalWords} kata cocok
+                        </span>
+                      </div>
+
+                      {/* Tombol Perbesar (A+) & Perkecil (A-) */}
+                      <div className="flex items-center gap-0.5 bg-slate-900/90 border border-slate-700/80 rounded-lg p-0.5 shadow-sm shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setEvalFontSize((prev) => Math.max(12, prev - 2))}
+                          className="px-1.5 py-0.5 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                          title="Perkecil ukuran teks kata evaluasi"
+                        >
+                          A-
+                        </button>
+                        <span className="text-[9px] font-mono font-semibold text-teal-400 px-1 select-none">
+                          {evalFontSize}px
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setEvalFontSize((prev) => Math.min(34, prev + 2))}
+                          className="px-1.5 py-0.5 text-[10px] font-bold text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                          title="Perbesar ukuran teks kata evaluasi"
+                        >
+                          A+
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Petunjuk Interaktif: Klik Kata untuk Mendengar Suara */}
+                    <div className="flex items-center gap-1 text-[10px] text-teal-300/80">
+                      <Volume2 className="w-3 h-3 text-teal-400 shrink-0" />
+                      <span>Klik kata di bawah untuk mendengar pelafalan audio kata tersebut:</span>
+                    </div>
+
+                    {/* Daftar Badge Kata Arab (Dapat Diperbesar & Dapat Diklik) */}
+                    <div className="flex flex-wrap gap-1.5" dir="rtl">
+                      {validationResult.wordMatches.map((wm, i) => {
+                        const isAudioPlaying = playingAudioId === `eval-word-${i}`;
+                        const audioWord = wm.cleanWord || wm.word.replace(/[✓✗\[\]()]/g, "").trim();
+
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => {
+                              if (audioWord) {
+                                playAudio(audioWord, `eval-word-${i}`);
+                              }
+                            }}
+                            style={{ fontSize: `${evalFontSize}px` }}
+                            className={`group inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl font-serif font-bold border transition-all shadow-sm cursor-pointer select-none hover:scale-105 active:scale-95 ${
+                              isAudioPlaying
+                                ? "bg-teal-500/30 text-teal-100 border-teal-400 ring-2 ring-teal-400/80 animate-pulse"
+                                : wm.matched
+                                ? "bg-emerald-950/80 text-emerald-200 border-emerald-500/70 hover:bg-emerald-900/90 hover:border-emerald-400"
+                                : "bg-rose-950/80 text-rose-100 border-rose-500/70 hover:bg-rose-900/90 hover:border-rose-400"
+                            }`}
+                            title={
+                              wm.matched
+                                ? `Pelafalan benar (${wm.word}). Klik untuk mendengarkan pelafalan kata ini.`
+                                : `Kata ini belum sesuai (${wm.word}). Klik untuk mendengarkan contoh pelafalan yang benar.`
+                            }
+                          >
+                            <span className="leading-snug">{wm.word}</span>
+                            <span
+                              className={`text-xs ${
+                                wm.matched ? "text-emerald-400" : "text-rose-400 font-bold"
+                              }`}
+                            >
+                              {wm.matched ? "✓" : "✗"}
+                            </span>
+                            <Volume2
+                              className={`w-3.5 h-3.5 shrink-0 transition-all ${
+                                isAudioPlaying
+                                  ? "text-teal-300 animate-bounce"
+                                  : "text-slate-400 group-hover:text-teal-300 opacity-60 group-hover:opacity-100"
+                              }`}
+                            />
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -2693,6 +2938,80 @@ export default function ArabicLearningThreeColumns() {
             activeMobileTab === "right" ? "flex" : "hidden lg:flex"
           }`}
         >
+          {/* Header Kolom Kanan: Nama AI di Kiri, Tombol-tombol di Kanan */}
+          <div className="shrink-0 bg-slate-900 border-b border-slate-800 p-2 sm:p-2.5 flex items-center justify-between">
+            {/* Kiri: Hanya Nama AI Saja */}
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
+                <Bot className="w-3.5 h-3.5" />
+              </div>
+              <h2 className="font-bold text-xs sm:text-sm text-slate-100 flex items-center gap-1.5">
+                <span>Mudarris AI</span>
+                <span className="text-[10px] font-normal px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Ustadz
+                </span>
+              </h2>
+            </div>
+
+            {/* Kanan: Khusus Tombol-tombol (Suasana, Panduan Suara, Info Model, Layar Penuh) */}
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              {/* Tombol Pengaturan Suasana & Skenario Percakapan */}
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedScenarioId(activeScenarioId);
+                  setCustomScenarioPrompt(activeScenarioPrompt);
+                  setShowScenarioModal(true);
+                }}
+                className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 border border-slate-700/60 transition-colors flex items-center gap-1"
+                title={`Pengaturan Suasana: ${currentScenario.name}`}
+                aria-label="Pengaturan Suasana"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-xs leading-none">
+                  {currentScenario.emoji}
+                </span>
+              </button>
+
+              {/* Tombol Panduan Suara & Diagnosis Mic */}
+              <button
+                type="button"
+                onClick={() => setShowVoiceHelpModal(true)}
+                className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-amber-400 hover:text-amber-300 border border-slate-700/60 transition-colors"
+                title="Panduan Suara & Diagnosis Mic"
+                aria-label="Panduan Suara"
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Tombol Penjelasan Model AI & Info Aplikasi */}
+              <button
+                type="button"
+                onClick={() => setShowInfoModal(true)}
+                className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-teal-300 hover:text-teal-200 border border-slate-700/60 transition-colors"
+                title="Penjelasan Model AI & Info Aplikasi"
+                aria-label="Penjelasan Model AI"
+              >
+                <Info className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Tombol Layar Penuh (Icon Only) */}
+              <button
+                type="button"
+                onClick={toggleFullscreen}
+                className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 transition-colors"
+                title={isFullscreen ? "Keluar Layar Penuh (Esc)" : "Mode Layar Penuh"}
+                aria-label={isFullscreen ? "Keluar Layar Penuh" : "Mode Layar Penuh"}
+              >
+                {isFullscreen ? (
+                  <Minimize2 className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Maximize2 className="w-3.5 h-3.5 text-slate-300" />
+                )}
+              </button>
+            </div>
+          </div>
+
           {/* 1. KOTAK MUDARRIS AI STICKY DI ATAS (Avatar Animasi Flat Icon & Kontrol Audio) */}
           <div className="shrink-0 bg-slate-900/95 border-b border-slate-800 backdrop-blur-md shadow-md">
             {/* Avatar AI & Kontrol Pemutar Audio */}
@@ -2811,10 +3130,10 @@ export default function ArabicLearningThreeColumns() {
 
                     <button
                       onClick={() => setSpeechSpeed(speechSpeed === 1.0 ? 0.75 : 1.0)}
-                      className="text-[10px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-medium whitespace-nowrap"
+                      className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-medium whitespace-nowrap"
                       title="Atur kecepatan audio pelan (0.75x) atau normal (1.0x)"
                     >
-                      {speechSpeed}x {speechSpeed === 0.75 && "(Tartil)"}
+                      {speechSpeed}x
                     </button>
                   </div>
 
