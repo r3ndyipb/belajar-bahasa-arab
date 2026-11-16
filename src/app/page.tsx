@@ -2463,55 +2463,31 @@ export default function ArabicLearningThreeColumns() {
                   </span>
                 </div>
 
-                {/* Pintas Pemilihan Rekomendasi 1, 2, 3 & Dengar Audio Target */}
-                <div className="flex items-center gap-1 shrink-0">
-                  {currentAiSpeech.recommendations.map((rec, i) => {
-                    const isRecActive = targetPractice.arabic === rec.arabic;
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => {
-                          setTargetPractice(rec);
-                          setValidationResult(null);
-                          setLiveTranscript("");
-                          setIsEditingTranscript(false);
-                        }}
-                        className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
-                          isRecActive
-                            ? "bg-teal-600 text-white border-teal-500 font-bold shadow-sm"
-                            : "bg-slate-800/80 hover:bg-slate-700 text-slate-400 border-slate-700"
-                        }`}
-                        title={`Pilih Opsi ${i + 1} sebagai target kalimat latihan`}
-                      >
-                        Opsi {i + 1}
-                      </button>
-                    );
-                  })}
-
+                {/* Tombol Dengar Audio Target & Kustom Teks (Cukup Icon Saja Tanpa Tombol Opsi) */}
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={() => playAudio(targetPractice.arabic, "target")}
                     disabled={isAiAudioLoading}
-                    className="text-[9px] sm:text-[10px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 flex items-center gap-1 transition-colors"
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 flex items-center justify-center transition-colors"
                     title="Dengarkan contoh pelafalan audio teks Arab target ini"
+                    aria-label="Dengar Contoh Pelafalan"
                   >
-                    <Volume2 className="w-3 h-3 text-teal-400" />
-                    <span className="hidden sm:inline">Dengar</span>
+                    <Volume2 className="w-3.5 h-3.5 text-teal-400" />
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setIsEditingTranscript(!isEditingTranscript)}
-                    className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded border flex items-center gap-1 transition-colors ${
+                    className={`p-1.5 rounded-lg border flex items-center justify-center transition-colors ${
                       isEditingTranscript
                         ? "bg-teal-600 text-white border-teal-500"
-                        : "bg-slate-800/80 hover:bg-slate-700 text-slate-400 border-slate-700"
+                        : "bg-slate-800/80 hover:bg-slate-700 text-slate-300 border-slate-700"
                     }`}
-                    title="Edit teks target latihan secara manual"
+                    title={isEditingTranscript ? "Tutup mode edit teks" : "Kustom teks target latihan secara manual"}
+                    aria-label="Kustom Kalimat Target"
                   >
-                    <Pencil className="w-2.5 h-2.5" />
-                    <span className="hidden sm:inline">{isEditingTranscript ? "Tutup" : "Kustom"}</span>
+                    <Pencil className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
