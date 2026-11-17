@@ -1867,52 +1867,13 @@ Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kat
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
-                  {/* Tab Pengalih Mode Cepat */}
-                  <div className="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 text-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => setActiveLeftMenu("translate")}
-                      className={`px-1.5 sm:px-2 py-1 rounded-md font-semibold transition-colors ${
-                        activeLeftMenu === "translate"
-                          ? "bg-emerald-700 text-white shadow-sm"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
-                      title="Buka Penerjemah"
-                    >
-                      Terjemah
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveLeftMenu("reference")}
-                      className={`px-1.5 sm:px-2 py-1 rounded-md font-semibold transition-colors ${
-                        activeLeftMenu === "reference"
-                          ? "bg-sky-700 text-white shadow-sm"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
-                      title="Buka Chat Referensi Teks"
-                    >
-                      Referensi
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveLeftMenu("notes")}
-                      className={`px-1.5 sm:px-2 py-1 rounded-md font-semibold transition-colors ${
-                        activeLeftMenu === "notes"
-                          ? "bg-amber-600 text-white shadow-sm"
-                          : "text-slate-400 hover:text-slate-200"
-                      }`}
-                      title="Buka Catatan Kaidah & Kosakata Opsi"
-                    >
-                      Kaidah
-                    </button>
-                  </div>
-
                   {/* Tombol Tutup Slider */}
                   <button
                     type="button"
                     onClick={() => setActiveLeftMenu(null)}
-                    className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors ml-0.5"
+                    className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
                     title="Tutup Panel Slider"
+                    aria-label="Tutup Panel"
                   >
                     <X className="w-4 h-4" />
                   </button>
