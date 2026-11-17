@@ -11,6 +11,7 @@ import {
   Check,
   BookOpen,
   Sparkles,
+  Lightbulb,
   RefreshCw,
   Info,
   Bot,
@@ -145,6 +146,7 @@ interface RecommendationOption {
   arabic: string;
   latin: string;
   translation: string;
+  notes?: string;
 }
 
 interface ParsedAiSpeech {
@@ -549,16 +551,22 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     arabic: "بِخَيْرٍ وَالْحَمْدُ لِلَّهِ، وَكَيْفَ حَالُكَ أَنْتَ يَا أُسْتَاذُ؟",
     latin: "Bikhayrin wal-hamdu lillāh, wa kayfa hāluka anta yā ustādz?",
     translation: "Alhamdulillah kabar baik, dan bagaimana kabarmu wahai ustadz?",
+    notes:
+      "• **بِخَيْرٍ** (*bi-khayr*): Huruf jar بِ (*bi*) men-jarkan kata خَيْرٍ (*khayr*) dengan tanda kasrah tain. Maknanya: dalam keadaan baik.\n• **وَكَيْفَ حَالُكَ** (*wa kayfa hāluka*): Isim istifham (kata tanya) كَيْفَ untuk menanyakan keadaan, disambung dhamir muhattab mudzakkar -كَ (*-ka*) untuk lawan bicara laki-laki tunggal.\n• **أُسْتَاذُ** (*ustādz*): Munada mufrod 'alam setelah huruf nida يَا (*yā*), mabni di atas tanda dhammah.",
   },
   {
     arabic: "أَهْلًا بِكَ، أُرِيدُ أَنْ أَتَعَلَّمَ الْمُحَادَثَةَ الْعَرَبِيَّةَ الْيَوْمَ.",
     latin: "Ahlan bik, urīdu an ata'allamal-muhādatsatal-'arabiyyata al-yawm.",
     translation: "Selamat datang, saya ingin belajar percakapan bahasa Arab hari ini.",
+    notes:
+      "• **أُرِيدُ** (*urīdu*): Fi'il mudhari' marfu' berfa'il dhamir mustatir أَنَا (*anā / saya*).\n• **أَنْ أَتَعَلَّمَ** (*an ata'allama*): Huruf nashab أَنْ me-nashab-kan fi'il mudhari' أَتَعَلَّمَ (tanda fathah).\n• **الْمُحَادَثَةَ** (*al-muhādatsata*): Maf'ul bih (objek penderita) berharakat fathah, diikuti na'at/sifat **الْعَرَبِيَّةَ**.\n• **الْيَوْمَ** (*al-yawma*): Zharaf zaman (keterangan waktu) berharakat manshub.",
   },
   {
     arabic: "عَلَيْكُمُ السَّلَامُ وَرَحْمَةُ اللَّهِ، أَنَا مُسْتَعِدٌّ لِلتَّدْرِيبِ!",
     latin: "'Alaikumus-salāmu wa rahmatullāh, anā musta'iddun lit-tadrīb!",
     translation: "Wa'alaikumussalam warahmatullah, saya siap untuk latihan!",
+    notes:
+      "• **عَلَيْكُمُ السَّلَامُ**: Jumlah ismiyyah susunan khabar muqaddam (عَلَيْكُمْ) dan mubtada muakhkhar (السَّلَامُ).\n• **أَنَا مُسْتَعِدٌّ** (*anā musta'iddun*): Mubtada (dhamir munfashil) dan Khabar (isim fa'il bertanwin dhammahtain).\n• **لِلتَّدْرِيبِ** (*lit-tadrīb*): Huruf jar لِ (*li*) diikuti masdar dari fi'il dabbara-yudabbiru (latihan/pelatihan).",
   },
 ];
 
@@ -665,8 +673,50 @@ export default function ArabicLearningThreeColumns() {
   const [translateError, setTranslateError] = useState<string | null>(null);
   const [copiedTranslateType, setCopiedTranslateType] = useState<"arabic" | "latin" | "all" | null>(null);
 
-  // Mode Menu Sidebar Kolom Kiri: default null (tertutup), "translate" (Penerjemah), "reference" (Chat Referensi)
-  const [activeLeftMenu, setActiveLeftMenu] = useState<"translate" | "reference" | null>(null);
+  // Mode Menu Sidebar Kolom Kiri: default null (tertutup), "translate" (Penerjemah), "reference" (Chat Referensi), "notes" (Kaidah & Kosakata Opsi)
+  const [activeLeftMenu, setActiveLeftMenu] = useState<"translate" | "reference" | "notes" | null>(null);
+  const [selectedOptionNotes, setSelectedOptionNotes] = useState<RecommendationOption>(DEFAULT_RECOMMENDATIONS[0]);
+  const [isExplainingOption, setIsExplainingOption] = useState<boolean>(false);
+
+  // Fungsi membedah mendalam kaidah & kosakata kalimat opsi dengan AI jika diminta
+  const handleExplainOptionWithAi = async (option: RecommendationOption) => {
+    if (!option.arabic) return;
+    setIsExplainingOption(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "user",
+              content: `Mohon jelaskan secara terperinci kaidah tata bahasa (Nahwu & Shorof), kedudukan I'rab, serta mufradat (makna kosakata) dari kalimat target berikut:
+Kalimat: "${option.arabic}"
+Latin: "${option.latin}"
+Arti: "${option.translation}"
+
+Sajikan dalam format yang sangat rapi untuk pemula:
+1. 📖 **Kosakata Kunci (Mufradat)**: Uraikan kata per kata beserta bentuk akar kata / tasrif jika relevan.
+2. ⚖️ **Kaidah Nahwu & I'rab**: Jelaskan kedudukan kata (mubtada/khabar, fi'il/fa'il/maf'ul bih, huruf jar, zharaf, dll) beserta harakat akhirnya.
+3. 💡 **Tips Praktik**: Cara pengucapan atau konteks penggunaan yang tepat dalam percakapan sehari-hari.`,
+            },
+          ],
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.text) {
+        setSelectedOptionNotes((prev) => ({
+          ...prev,
+          notes: data.text,
+        }));
+      }
+    } catch (err) {
+      console.warn("Gagal meminta penjelasan kaidah opsi:", err);
+    } finally {
+      setIsExplainingOption(false);
+    }
+  };
 
   // Mode Tampilan Kotak Kolom Kiri: "normal" (buka bagi 2), "minimized" (ciutkan), "full" (layar penuh kolom)
   const [topBoxMode, setTopBoxMode] = useState<"normal" | "minimized" | "full">("normal");
@@ -899,10 +949,14 @@ export default function ArabicLearningThreeColumns() {
         const ar = block.match(/(?:Arab|\u0639\u0631\u0628\u064a)[^\n:]*[:\n]\s*([^\n#]+)/i);
         const lt = block.match(/(?:Latin|Transliterasi)[^\n:]*[:\n]\s*([^\n#]+)/i);
         const tr = block.match(/(?:Arti|Terjemahan)[^\n:]*[:\n]\s*([^\n#]+)/i);
+        const kd = block.match(
+          /(?:Kaidah|Catatan|Mufradat)[^\n:]*[:\n]\s*([\s\S]*?)(?=(?:\n\s*[-*•]?\s*(?:Arab|Latin|Arti|Terjemahan|Opsi)|\n\s*$|$))/i
+        );
         if (ar && ar[1]) {
           const rawAr = ar[1].replace(/[*_#`~]/g, "").trim();
           const rawLt = lt ? lt[1].replace(/[*_#`~]/g, "").trim() : "";
           const rawTr = tr ? tr[1].replace(/[*_#`~"']/g, "").trim() : "";
+          const rawKd = kd ? kd[1].trim() : "";
 
           // Jika kalimat Arab mengandung alternatif gabungan ("atau", "أو", "/"), pisahkan menjadi opsi bersih tersendiri
           if (/\s+(?:atau|\u0623\u0648)\s+|\s+[/|]\s+/i.test(rawAr)) {
@@ -928,6 +982,7 @@ export default function ArabicLearningThreeColumns() {
                 arabic: partAr,
                 latin: ltParts[idx] || rawLt,
                 translation: trParts[idx] || rawTr,
+                notes: rawKd || undefined,
               });
             });
           } else {
@@ -935,6 +990,7 @@ export default function ArabicLearningThreeColumns() {
               arabic: rawAr,
               latin: rawLt,
               translation: rawTr,
+              notes: rawKd || undefined,
             });
           }
         }
@@ -1318,6 +1374,7 @@ export default function ArabicLearningThreeColumns() {
       // Otomatis perbarui target latihan bicara dengan rekomendasi baru dari AI
       if (parsed.recommendations && parsed.recommendations.length > 0) {
         setTargetPractice(parsed.recommendations[0]);
+        setSelectedOptionNotes(parsed.recommendations[0]);
       }
       setValidationResult(null);
       setLiveTranscript("");
@@ -1653,6 +1710,30 @@ export default function ArabicLearningThreeColumns() {
                   <span>Chat Referensi Teks (Nahwu / Shorof)</span>
                 </div>
               </div>
+
+              {/* Menu 3: Catatan Kaidah & Kosakata Opsi */}
+              <div className="relative group flex items-center justify-center w-full">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveLeftMenu(activeLeftMenu === "notes" ? null : "notes");
+                  }}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    activeLeftMenu === "notes"
+                      ? "bg-amber-600 text-white shadow-lg shadow-amber-950/60 ring-2 ring-amber-400/40 scale-105"
+                      : "bg-slate-800/80 hover:bg-slate-800 text-amber-400 hover:text-amber-300 border border-slate-700/60"
+                  }`}
+                  aria-label="Catatan Kaidah & Kosakata Opsi"
+                >
+                  <Lightbulb className="w-5 h-5" />
+                </button>
+
+                {/* Tooltip on Hover */}
+                <div className="absolute left-full ml-2.5 px-2.5 py-1 bg-slate-900 text-slate-100 text-xs font-semibold rounded-lg shadow-xl border border-slate-700 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  <span>Catatan Kaidah & Kosakata Opsi</span>
+                </div>
+              </div>
             </div>
 
             {/* Bagian Bawah: Indikator Tutup Drawer Jika Terbuka */}
@@ -1685,57 +1766,84 @@ export default function ArabicLearningThreeColumns() {
                     className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                       activeLeftMenu === "translate"
                         ? "bg-emerald-950 border border-emerald-800/60 text-emerald-400"
-                        : "bg-sky-950 border border-sky-800/60 text-sky-400"
+                        : activeLeftMenu === "reference"
+                        ? "bg-sky-950 border border-sky-800/60 text-sky-400"
+                        : "bg-amber-950 border border-amber-800/60 text-amber-400"
                     }`}
                   >
                     {activeLeftMenu === "translate" ? (
                       <Languages className="w-4 h-4" />
-                    ) : (
+                    ) : activeLeftMenu === "reference" ? (
                       <BookOpen className="w-4 h-4" />
+                    ) : (
+                      <Lightbulb className="w-4 h-4" />
                     )}
                   </div>
                   <div className="min-w-0">
                     <h3 className="font-bold text-xs sm:text-sm text-slate-100 truncate">
                       {activeLeftMenu === "translate"
                         ? "Penerjemah Indonesia ➔ Arab"
-                        : "Chat Referensi Teks"}
+                        : activeLeftMenu === "reference"
+                        ? "Chat Referensi Teks"
+                        : "Catatan Kaidah & Kosakata"}
                     </h3>
                     <p className="text-[10px] text-slate-400 truncate">
                       {activeLeftMenu === "translate"
                         ? "Teks Arab Berharakat Lengkap & Transliterasi Latin"
-                        : "Tanya Kaidah Nahwu, Shorof, Tasrif & Mufradat (Tanpa Suara)"}
+                        : activeLeftMenu === "reference"
+                        ? "Tanya Kaidah Nahwu, Shorof, Tasrif & Mufradat"
+                        : "Penjelasan Tata Bahasa & Kosakata Opsi Terpilih"}
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
-                  {/* Beralih Cepat Menu Lain */}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveLeftMenu(
-                        activeLeftMenu === "translate" ? "reference" : "translate"
-                      )
-                    }
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-semibold flex items-center gap-1 transition-colors"
-                    title={
-                      activeLeftMenu === "translate"
-                        ? "Beralih ke Chat Referensi"
-                        : "Beralih ke Penerjemah"
-                    }
-                  >
-                    <ArrowLeftRight className="w-3 h-3 text-slate-400" />
-                    <span className="hidden sm:inline">
-                      {activeLeftMenu === "translate" ? "Referensi" : "Terjemah"}
-                    </span>
-                  </button>
+                  {/* Tab Pengalih Mode Cepat */}
+                  <div className="flex items-center bg-slate-950/80 p-0.5 rounded-lg border border-slate-800 text-[10px]">
+                    <button
+                      type="button"
+                      onClick={() => setActiveLeftMenu("translate")}
+                      className={`px-1.5 sm:px-2 py-1 rounded-md font-semibold transition-colors ${
+                        activeLeftMenu === "translate"
+                          ? "bg-emerald-700 text-white shadow-sm"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                      title="Buka Penerjemah"
+                    >
+                      Terjemah
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveLeftMenu("reference")}
+                      className={`px-1.5 sm:px-2 py-1 rounded-md font-semibold transition-colors ${
+                        activeLeftMenu === "reference"
+                          ? "bg-sky-700 text-white shadow-sm"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                      title="Buka Chat Referensi Teks"
+                    >
+                      Referensi
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveLeftMenu("notes")}
+                      className={`px-1.5 sm:px-2 py-1 rounded-md font-semibold transition-colors ${
+                        activeLeftMenu === "notes"
+                          ? "bg-amber-600 text-white shadow-sm"
+                          : "text-slate-400 hover:text-slate-200"
+                      }`}
+                      title="Buka Catatan Kaidah & Kosakata Opsi"
+                    >
+                      Kaidah
+                    </button>
+                  </div>
 
                   {/* Tombol Tutup Slider */}
                   <button
                     type="button"
                     onClick={() => setActiveLeftMenu(null)}
-                    className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
-                    title="Tutup Menu Ini"
+                    className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors ml-0.5"
+                    title="Tutup Panel Slider"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -2123,6 +2231,139 @@ export default function ArabicLearningThreeColumns() {
                   </div>
                 </div>
               )}
+
+              {/* Konten 3: Catatan Kosakata & Kaidah Opsi Terpilih */}
+              {activeLeftMenu === "notes" && (
+                <div className="flex-1 min-h-0 flex flex-col overflow-y-auto p-3 sm:p-4 space-y-3.5">
+                  {/* Kartu Ringkasan Kalimat Opsi Terpilih */}
+                  <div className="p-3.5 rounded-xl bg-slate-950/80 border border-amber-500/30 shadow-md space-y-2">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-amber-400 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Opsi Kalimat Terpilih</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => playAudio(selectedOptionNotes.arabic, "notes-audio")}
+                        disabled={isAiSpeaking && playingAudioId === "notes-audio"}
+                        className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 flex items-center gap-1 text-[10px] font-semibold transition-colors"
+                        title="Dengarkan pengucapan kalimat ini"
+                      >
+                        <Volume2 className="w-3 h-3 text-amber-400" />
+                        <span>Dengar Audio</span>
+                      </button>
+                    </div>
+
+                    {/* Teks Arab */}
+                    <div dir="rtl" className="font-serif text-xl sm:text-2xl font-bold text-amber-100 leading-relaxed pt-0.5">
+                      {selectedOptionNotes.arabic}
+                    </div>
+
+                    {/* Latin */}
+                    {selectedOptionNotes.latin && (
+                      <div className="text-xs text-amber-300/90 italic font-medium">
+                        {selectedOptionNotes.latin}
+                      </div>
+                    )}
+
+                    {/* Terjemahan */}
+                    {selectedOptionNotes.translation && (
+                      <div className="text-xs text-slate-300 leading-normal pt-1.5 border-t border-slate-800/80">
+                        <span className="text-slate-500 text-[10px] uppercase font-bold block mb-0.5">Arti:</span>
+                        {selectedOptionNotes.translation}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Section: Penjelasan Kaidah & Kosakata */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                        <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Analisis Kaidah Nahwu / Shorof & Kosakata</span>
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => handleExplainOptionWithAi(selectedOptionNotes)}
+                        disabled={isExplainingOption}
+                        className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold disabled:opacity-50 transition-colors"
+                        title="Minta AI membedah lebih mendalam"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${isExplainingOption ? "animate-spin" : ""}`} />
+                        <span>{isExplainingOption ? "Menganalisis..." : "Perdalam Penjelasan"}</span>
+                      </button>
+                    </div>
+
+                    {isExplainingOption ? (
+                      <div className="p-4 rounded-xl bg-slate-950/70 border border-amber-500/30 text-xs text-amber-300 flex items-center gap-2.5 animate-pulse">
+                        <RefreshCw className="w-4 h-4 animate-spin text-amber-400 shrink-0" />
+                        <span>Menyusun uraian kaidah Nahwu, Shorof & mufradat untuk opsi ini...</span>
+                      </div>
+                    ) : selectedOptionNotes.notes ? (
+                      <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs text-slate-200 leading-relaxed shadow-sm">
+                        <FormattedMessage content={selectedOptionNotes.notes} theme="amber" />
+                      </div>
+                    ) : (
+                      <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-2.5">
+                        <p className="text-xs text-slate-400">
+                          Belum ada catatan khusus yang tersimpan untuk kalimat ini.
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleExplainOptionWithAi(selectedOptionNotes)}
+                          className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 mx-auto transition-colors shadow-md"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Bedah Kaidah Kalimat Ini dengan AI</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Section: Aksi Pintas */}
+                  <div className="pt-2 border-t border-slate-800 space-y-2">
+                    <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                      Aksi Pintas:
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRefInputText(`Jelaskan kaidah I'rab, kedudukan kata, dan tasrif dari kalimat: "${selectedOptionNotes.arabic}" (${selectedOptionNotes.translation})`);
+                          setActiveLeftMenu("reference");
+                        }}
+                        className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 hover:border-sky-500/50 text-slate-200 hover:text-sky-300 text-left transition-all text-xs flex items-center gap-2.5 shadow-sm"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-sky-950 border border-sky-800/60 flex items-center justify-center text-sky-400 shrink-0">
+                          <BookOpen className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-[11px] truncate">Tanya di Referensi</div>
+                          <div className="text-[10px] text-slate-400 truncate">Diskusi tata bahasa lebih lanjut</div>
+                        </div>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTargetPractice(selectedOptionNotes);
+                          setActiveMobileTab("center");
+                          startRecording();
+                        }}
+                        className="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 hover:border-emerald-500/50 text-slate-200 hover:text-emerald-300 text-left transition-all text-xs flex items-center gap-2.5 shadow-sm"
+                      >
+                        <div className="w-7 h-7 rounded-lg bg-emerald-950 border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
+                          <Mic className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-[11px] truncate">Latih Pengucapan</div>
+                          <div className="text-[10px] text-slate-400 truncate">Ucapkan ke mikrofon sekarang</div>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -2258,6 +2499,8 @@ export default function ArabicLearningThreeColumns() {
                     key={idx}
                     onClick={() => {
                       setTargetPractice(rec);
+                      setSelectedOptionNotes(rec);
+                      setActiveLeftMenu("notes");
                       setValidationResult(null);
                       setLiveTranscript("");
                     }}
@@ -2266,17 +2509,40 @@ export default function ArabicLearningThreeColumns() {
                         ? "bg-teal-950/40 border-teal-500/70 ring-1 ring-teal-500/40"
                         : "bg-slate-950/80 hover:bg-teal-950/20 border-slate-800 hover:border-teal-700/50"
                     }`}
-                    title="Klik untuk memilih kalimat ini sebagai target latihan bicara"
+                    title="Klik untuk memilih kalimat ini & melihat catatan kaidah/kosakata di kolom kiri"
                   >
-                    {/* Header Card dengan Badge Target */}
+                    {/* Header Card dengan Badge Target & Indikator Kaidah */}
                     <div className="flex items-center justify-between text-[10px]">
-                      <span className="font-semibold text-slate-400">
-                        Opsi {idx + 1}
-                      </span>
-                      {isSelected && (
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-slate-400">
+                          Opsi {idx + 1}
+                        </span>
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedOptionNotes(rec);
+                            setActiveLeftMenu("notes");
+                          }}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+                            rec.notes
+                              ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30"
+                              : "bg-slate-800 text-slate-400 border border-slate-700 hover:text-amber-300"
+                          }`}
+                          title="Klik untuk membuka catatan kaidah & kosakata di kolom kiri"
+                        >
+                          <Lightbulb className="w-2.5 h-2.5 text-amber-400" />
+                          <span>Kaidah & Kosakata</span>
+                        </span>
+                      </div>
+                      {isSelected ? (
                         <span className="px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/40 font-bold flex items-center gap-1">
                           <Check className="w-2.5 h-2.5" />
                           <span>Target Latihan Aktif</span>
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-teal-400/80 group-hover:text-teal-300 flex items-center gap-1 transition-colors">
+                          <span>Pilih & Buka Kaidah</span>
+                          <ArrowLeftRight className="w-2.5 h-2.5 opacity-60" />
                         </span>
                       )}
                     </div>
@@ -2320,8 +2586,9 @@ export default function ArabicLearningThreeColumns() {
                           if (isOptionAudioPlaying) {
                             stopAudio();
                           } else {
-                            // Sinkronkan juga target latihan agar langsung siap diucapkan di kotak bawah
+                            // Sinkronkan juga target latihan dan catatan kaidah
                             setTargetPractice(rec);
+                            setSelectedOptionNotes(rec);
                             setValidationResult(null);
                             setLiveTranscript("");
                             playAudio(rec.arabic, `option-${idx}`);
@@ -2365,6 +2632,8 @@ export default function ArabicLearningThreeColumns() {
                           onClick={(e) => {
                             e.stopPropagation();
                             setTargetPractice(rec);
+                            setSelectedOptionNotes(rec);
+                            setActiveLeftMenu("notes");
                             setValidationResult(null);
                             setLiveTranscript("");
                           }}
@@ -2373,7 +2642,7 @@ export default function ArabicLearningThreeColumns() {
                               ? "bg-teal-600 text-white border-teal-500 font-bold shadow-sm"
                               : "bg-slate-800 hover:bg-slate-700 text-teal-300 border-slate-700"
                           }`}
-                          title="Jadikan kalimat ini target latihan bicara di bawah"
+                          title="Jadikan kalimat ini target latihan bicara di bawah & buka kaidah di kolom kiri"
                         >
                           <Target className="w-3 h-3 text-teal-300" />
                           <span>{isSelected ? "Sedang Dilatih" : "Latih Kalimat Ini"}</span>
@@ -2452,8 +2721,21 @@ export default function ArabicLearningThreeColumns() {
                   </span>
                 </div>
 
-                {/* Tombol Dengar Audio Target & Kustom Teks (Cukup Icon Saja Tanpa Tombol Opsi) */}
+                {/* Tombol Dengar Audio Target, Kaidah & Kustom Teks (Cukup Icon Saja Tanpa Tombol Opsi) */}
                 <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedOptionNotes(targetPractice);
+                      setActiveLeftMenu("notes");
+                    }}
+                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-amber-950/60 hover:text-amber-300 text-slate-300 border border-slate-700 flex items-center justify-center transition-colors"
+                    title="Buka catatan kaidah & kosakata kalimat target ini di kolom kiri"
+                    aria-label="Lihat Kaidah & Kosakata"
+                  >
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => playAudio(targetPractice.arabic, "target")}

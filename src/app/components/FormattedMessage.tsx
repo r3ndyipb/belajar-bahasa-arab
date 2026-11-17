@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 
 interface FormattedMessageProps {
   content: string;
-  theme?: "sky" | "emerald" | "slate";
+  theme?: "sky" | "emerald" | "slate" | "amber";
 }
 
 // Helper to safely extract plain text from React nodes (handles strings, numbers, arrays, elements)
@@ -60,6 +60,8 @@ export default function FormattedMessage({
   const accentColor =
     theme === "emerald"
       ? "text-emerald-300"
+      : theme === "amber"
+      ? "text-amber-300"
       : theme === "slate"
       ? "text-teal-200"
       : "text-sky-300";
@@ -67,11 +69,15 @@ export default function FormattedMessage({
   const firstColColor =
     theme === "emerald"
       ? "first:text-emerald-300/90"
+      : theme === "amber"
+      ? "first:text-amber-300/90"
       : "first:text-sky-300/90";
 
   const tableHeaderBg =
     theme === "emerald"
       ? "bg-emerald-950/80 text-emerald-200 border-emerald-900/60"
+      : theme === "amber"
+      ? "bg-amber-950/80 text-amber-200 border-amber-900/60"
       : theme === "slate"
       ? "bg-slate-800 text-slate-200 border-slate-700"
       : "bg-sky-950/80 text-sky-200 border-sky-900/60";
