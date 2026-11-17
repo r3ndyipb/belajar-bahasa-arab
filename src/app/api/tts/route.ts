@@ -1,11 +1,21 @@
 import { NextResponse } from "next/server";
+import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 
-// Fungsi untuk membagi teks panjang menjadi potongan (chunks) alami <= 85 karakter
-// agar tidak melebihi batasan Google Translate TTS (maks ~100 karakter per query)
+// Cache audio dalam memori agar kata/kalimat yang sering diputar bersuara instan tanpa jeda
+const audioCache = new Map<string, Buffer>();
+const MAX_CACHE_SIZE = 250;
+
+function cacheAudio(key: string, buffer: Buffer) {
+  if (audioCache.size >= MAX_CACHE_SIZE) {
+    const oldestKey = audioCache.keys().next().value;
+    if (oldestKey) audioCache.delete(oldestKey);
+  }
+  audioCache.set(key, buffer);
+}
+
+// Fungsi bantu membagi teks panjang menjadi potongan <= 85 karakter untuk fallback Google TTS
 function splitTextIntoNaturalChunks(text: string, maxLen = 85): string[] {
   if (!text || text.trim().length === 0) return [];
-
-  // Pisahkan berdasarkan tanda baca kalimat Arab & Latin: . ! ? ، ؟ ؛ \n
   const rawSentences = text.split(/(?<=[.!?،؟؛\n])\s+/);
   const chunks: string[] = [];
   let currentChunk = "";
@@ -19,7 +29,6 @@ function splitTextIntoNaturalChunks(text: string, maxLen = 85): string[] {
     } else {
       if (currentChunk) chunks.push(currentChunk);
 
-      // Jika satu kalimat saja sudah melebihi maxLen, pisah per kata
       if (trimmed.length > maxLen) {
         const words = trimmed.split(/\s+/);
         let wordChunk = "";
@@ -45,9 +54,46 @@ function splitTextIntoNaturalChunks(text: string, maxLen = 85): string[] {
   return chunks;
 }
 
+// Generator suara laki-laki menggunakan Microsoft Edge Neural TTS
+async function generateEdgeTtsMale(
+  text: string,
+  voice: string,
+  timeoutMs = 9000
+): Promise<Buffer> {
+  const tts = new MsEdgeTTS();
+  await tts.setMetadata(voice, OUTPUT_FORMAT.AUDIO_24KHZ_48KBITRATE_MONO_MP3);
+  const { audioStream } = tts.toStream(text);
+
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    const timer = setTimeout(() => {
+      try {
+        tts.close();
+      } catch (_) {}
+      reject(new Error("Timeout generating Edge TTS male speech"));
+    }, timeoutMs);
+
+    audioStream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    audioStream.on("end", () => {
+      clearTimeout(timer);
+      try {
+        tts.close();
+      } catch (_) {}
+      resolve(Buffer.concat(chunks));
+    });
+    audioStream.on("error", (err: Error) => {
+      clearTimeout(timer);
+      try {
+        tts.close();
+      } catch (_) {}
+      reject(err);
+    });
+  });
+}
+
 export async function POST(req: Request) {
   try {
-    const { text, lang = "ar" } = await req.json();
+    const { text, lang = "ar", voice } = await req.json();
 
     if (!text || typeof text !== "string") {
       return NextResponse.json(
@@ -56,9 +102,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Bersihkan teks dari format markdown dan formatting tidak perlu
+    // Bersihkan teks dari karakter markdown dan simbol formatting
     const cleanedText = text
-      .replace(/[*_#`~[\]()]/g, "")
+      .replace(/[*_#`~[\]()✓✗]/g, "")
       .replace(/[\n\r]+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
@@ -74,12 +120,61 @@ export async function POST(req: Request) {
     const hasArabic = /[\u0600-\u06FF]/.test(cleanedText);
     const targetLang = lang === "id" ? "id" : hasArabic ? "ar" : "id";
 
-    // 1. Prioritas Utama: Google Translate TTS Native Audio dengan Multi-chunk Concatenation
+    // Suara default laki-laki:
+    // Bahasa Arab: "ar-SA-HamedNeural" (Hamed - Suara Laki-laki Ustadz / Guru Arab Saudi)
+    // Bahasa Indonesia: "id-ID-ArdiNeural" (Ardi - Suara Laki-laki Indonesia)
+    const selectedMaleVoice =
+      voice ||
+      (targetLang === "ar" ? "ar-SA-HamedNeural" : "id-ID-ArdiNeural");
+
+    const cacheKey = `${selectedMaleVoice}:${cleanedText}`;
+    if (audioCache.has(cacheKey)) {
+      const cachedBuf = audioCache.get(cacheKey)!;
+      return new NextResponse(new Uint8Array(cachedBuf), {
+        status: 200,
+        headers: {
+          "Content-Type": "audio/mpeg",
+          "Content-Length": cachedBuf.length.toString(),
+          "Cache-Control": "public, max-age=86400",
+          "X-Audio-Source": "cache-male",
+        },
+      });
+    }
+
+    // =========================================================================
+    // 1. PRIORITAS UTAMA: MICROSOFT EDGE NEURAL TTS (SUARA LAKI-LAKI HAMED & ARDI)
+    // =========================================================================
+    try {
+      const maleAudioBuffer = await generateEdgeTtsMale(
+        cleanedText,
+        selectedMaleVoice,
+        9000
+      );
+
+      if (maleAudioBuffer && maleAudioBuffer.length > 200) {
+        cacheAudio(cacheKey, maleAudioBuffer);
+        return new NextResponse(new Uint8Array(maleAudioBuffer), {
+          status: 200,
+          headers: {
+            "Content-Type": "audio/mpeg",
+            "Content-Length": maleAudioBuffer.length.toString(),
+            "Cache-Control": "public, max-age=86400",
+            "X-Audio-Source": "edge-male",
+            "X-Voice-Name": selectedMaleVoice,
+          },
+        });
+      }
+    } catch (edgeErr) {
+      console.warn("Edge TTS male generator warning, beralih ke fallback:", edgeErr);
+    }
+
+    // =========================================================================
+    // 2. CADANGAN GOOGLE TTS MULTI-CHUNK
+    // =========================================================================
     try {
       const chunks = splitTextIntoNaturalChunks(cleanedText, 85);
 
       if (chunks.length > 0) {
-        // Ambil setiap potongan audio secara paralel
         const fetchPromises = chunks.map(async (chunk) => {
           const googleTtsUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${targetLang}&client=tw-ob&q=${encodeURIComponent(
             chunk
@@ -105,57 +200,23 @@ export async function POST(req: Request) {
         const combinedBuffer = Buffer.concat(audioBuffers);
 
         if (combinedBuffer.length > 100) {
-          return new NextResponse(combinedBuffer, {
+          cacheAudio(cacheKey, combinedBuffer);
+          return new NextResponse(new Uint8Array(combinedBuffer), {
             status: 200,
             headers: {
               "Content-Type": "audio/mpeg",
               "Content-Length": combinedBuffer.length.toString(),
               "Cache-Control": "public, max-age=86400",
+              "X-Audio-Source": "google-fallback",
             },
           });
         }
       }
     } catch (gErr) {
-      console.warn("Google TTS multi-chunk warning, mencoba alternatif Edge TTS:", gErr);
+      console.warn("Google TTS fallback failed:", gErr);
     }
 
-    // 2. Alternatif Cadangan: Edge TTS Endpoint (Bila server aktif)
-    const EDGE_TTS_URL =
-      process.env.EDGE_TTS_URL ||
-      "https://iss-uitjbt.inovasiuitjbt.uk/edge-tts/v1/audio/speech";
-    const EDGE_TTS_KEY = process.env.EDGE_TTS_KEY || "garda_secret_123";
-
-    try {
-      const ttsRes = await fetch(EDGE_TTS_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${EDGE_TTS_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "tts-1",
-          voice: targetLang === "ar" ? "ar-SA-HamedNeural" : "id-ID-ArdiNeural",
-          input: cleanedText.slice(0, 250),
-          response_format: "mp3",
-        }),
-      });
-
-      const contentType = ttsRes.headers.get("content-type") || "";
-      if (ttsRes.ok && contentType.includes("audio")) {
-        const audioBuffer = await ttsRes.arrayBuffer();
-        return new NextResponse(audioBuffer, {
-          status: 200,
-          headers: {
-            "Content-Type": "audio/mpeg",
-            "Cache-Control": "public, max-age=86400",
-          },
-        });
-      }
-    } catch (edgeErr) {
-      console.warn("Edge TTS upstream error:", edgeErr);
-    }
-
-    // 3. Fallback info ke klien untuk Web Speech API jika upstream offline
+    // 3. Fallback info ke klien untuk Web Speech API
     return NextResponse.json({
       success: false,
       fallback: "webspeech",

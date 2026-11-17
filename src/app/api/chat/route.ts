@@ -29,12 +29,18 @@ TUGAS UTAMA:
        - Arab: [Teks Arab berharakat murni tanpa kata Indonesia]
        - Latin: [Transliterasi bacaan Latin]
        - Arti: [Terjemahan bahasa Indonesia]
-       - Kaidah: [Penjelasan ringkas makna kosakata kunci dan kaidah Nahwu/Shorof kalimat ini]
+       - Kaidah:
+         • [Kata 1] ([Latin 1]): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
+         • [Kata 2] ([Latin 2]): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
+         • Fokus Tata Bahasa: [Penjelasan kaidah Nahwu/Shorof susunan kalimat ini].
      * Opsi 2:
        - Arab: [Teks Arab berharakat murni tanpa kata Indonesia]
        - Latin: [Transliterasi bacaan Latin]
        - Arti: [Terjemahan bahasa Indonesia]
-       - Kaidah: [Penjelasan ringkas makna kosakata kunci dan kaidah Nahwu/Shorof kalimat ini]
+       - Kaidah:
+         • [Kata 1] ([Latin 1]): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
+         • [Kata 2] ([Latin 2]): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
+         • Fokus Tata Bahasa: [Penjelasan kaidah Nahwu/Shorof susunan kalimat ini].
 5. Jika pengguna berbicara dalam bahasa Indonesia atau mencoba bahasa Arab yang kurang tepat secara tata bahasa, apresiasi usahanya lalu tunjukkan cara pengucapan atau susunan kalimat yang benar dengan sopan.
 6. Hindari rumus LaTeX ($$), simbol yang membingungkan, atau escape karakter aneh. Gunakan Markdown standar yang rapi dan tabel yang presisi.
 `;
@@ -42,13 +48,18 @@ TUGAS UTAMA:
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const {
+    let {
       message,
+      messages,
       sessionId = `session-${Date.now()}`,
       mode = "general",
       scenarioPrompt,
       scenarioName,
     } = body;
+
+    if (!message && Array.isArray(messages) && messages.length > 0) {
+      message = messages[messages.length - 1]?.content || "";
+    }
 
     if (!message || typeof message !== "string") {
       return NextResponse.json(

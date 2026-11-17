@@ -551,22 +551,47 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     arabic: "بِخَيْرٍ وَالْحَمْدُ لِلَّهِ، وَكَيْفَ حَالُكَ أَنْتَ يَا أُسْتَاذُ؟",
     latin: "Bikhayrin wal-hamdu lillāh, wa kayfa hāluka anta yā ustādz?",
     translation: "Alhamdulillah kabar baik, dan bagaimana kabarmu wahai ustadz?",
-    notes:
-      "• **بِخَيْرٍ** (*bi-khayr*): Huruf jar بِ (*bi*) men-jarkan kata خَيْرٍ (*khayr*) dengan tanda kasrah tain. Maknanya: dalam keadaan baik.\n• **وَكَيْفَ حَالُكَ** (*wa kayfa hāluka*): Isim istifham (kata tanya) كَيْفَ untuk menanyakan keadaan, disambung dhamir muhattab mudzakkar -كَ (*-ka*) untuk lawan bicara laki-laki tunggal.\n• **أُسْتَاذُ** (*ustādz*): Munada mufrod 'alam setelah huruf nida يَا (*yā*), mabni di atas tanda dhammah.",
+    notes: `💡 **Catatan Kosakata / Kaidah:**
+• **بِخَيْرٍ** (*Bi-khayr*): Baik / dalam kebaikan (Huruf jar بِ = dalam/dengan + kata خَيْرٍ = kebaikan/kondisi baik).
+• **وَالْحَمْدُ** (*Wal-hamdu*): Dan segala puji (Huruf sambung وَ = dan + الْحَمْدُ = segala pujian).
+• **لِلَّهِ** (*Lillāh*): Bagi Allah (Huruf jar لِ = untuk/milik + lafadz jalalah اللَّه).
+• **وَكَيْفَ** (*Wa kayfa*): Dan bagaimana (Kata tanya / isim istifham untuk menanyakan keadaan).
+• **حَالُكَ** (*Hāluka*): Kabarmu / keadaanmu (Kata حَال = kondisi + -كَ = akhiran kepemilikan untuk laki-laki tunggal).
+• **أَنْتَ** (*Anta*): Anda / kamu (Dhamir munfashil sebagai penguat/taukid).
+• **يَا** (*Yā*): Wahai (Huruf nida untuk memanggil).
+• **أُسْتَاذُ** (*Ustādz*): Ustadz / guru (Kata benda yang dipanggil / munada berharakat tunggal dhammah).
+
+**Fokus Tata Bahasa**: Kalimat diawali dengan keterangan keadaan (*bi-khayr*), disusul kalimat tahmid (*al-hamdu lillāh*), lalu mengembalikan pertanyaan secara santun (*wa kayfa hāluka anta yā ustādz*) menggunakan isim istifham *kayfa* dan sapaan hormat *yā ustādz*.`,
   },
   {
     arabic: "أَهْلًا بِكَ، أُرِيدُ أَنْ أَتَعَلَّمَ الْمُحَادَثَةَ الْعَرَبِيَّةَ الْيَوْمَ.",
     latin: "Ahlan bik, urīdu an ata'allamal-muhādatsatal-'arabiyyata al-yawm.",
     translation: "Selamat datang, saya ingin belajar percakapan bahasa Arab hari ini.",
-    notes:
-      "• **أُرِيدُ** (*urīdu*): Fi'il mudhari' marfu' berfa'il dhamir mustatir أَنَا (*anā / saya*).\n• **أَنْ أَتَعَلَّمَ** (*an ata'allama*): Huruf nashab أَنْ me-nashab-kan fi'il mudhari' أَتَعَلَّمَ (tanda fathah).\n• **الْمُحَادَثَةَ** (*al-muhādatsata*): Maf'ul bih (objek penderita) berharakat fathah, diikuti na'at/sifat **الْعَرَبِيَّةَ**.\n• **الْيَوْمَ** (*al-yawma*): Zharaf zaman (keterangan waktu) berharakat manshub.",
+    notes: `💡 **Catatan Kosakata / Kaidah:**
+• **أَهْلًا بِكَ** (*Ahlan bika*): Selamat datang padamu (Ungkapan keramahan menyambut lawan bicara pria).
+• **أُرِيدُ** (*Urīdu*): Saya ingin (Kata kerja masa kini / fi'il mudhari' untuk subjek saya/أَنَا).
+• **أَنْ** (*An*): Untuk / agar (Huruf penjelas maksud / amil nashab yang menashabkan fi'il berikutnya).
+• **أَتَعَلَّمَ** (*Ata'allama*): Saya belajar (Fi'il mudhari' berharakat akhir fathah karena dipengaruhi huruf أَنْ).
+• **الْمُحَادَثَةَ** (*Al-muhādatsata*): Percakapan (Objek kalimat / maf'ul bih berharakat fathah).
+• **الْعَرَبِيَّةَ** (*Al-'arabiyyata*): Bahasa Arab (Kata sifat / na'at yang menerangkan kata al-muhādatsata).
+• **الْيَوْمَ** (*Al-yawma*): Hari ini (Keterangan waktu / zharaf zaman berharakat fathah).
+
+**Fokus Tata Bahasa**: Kata kerja kedua **أَتَعَلَّمَ** berubah harakat akhirnya menjadi fathah (*manshub*) karena didahului huruf **أَنْ**. Pasangan **الْمُحَادَثَةَ الْعَرَبِيَّةَ** adalah susunan sifat-karakter (*na'at-man'ut*) yang keduanya berharakat fathah.`,
   },
   {
     arabic: "عَلَيْكُمُ السَّلَامُ وَرَحْمَةُ اللَّهِ، أَنَا مُسْتَعِدٌّ لِلتَّدْرِيبِ!",
     latin: "'Alaikumus-salāmu wa rahmatullāh, anā musta'iddun lit-tadrīb!",
     translation: "Wa'alaikumussalam warahmatullah, saya siap untuk latihan!",
-    notes:
-      "• **عَلَيْكُمُ السَّلَامُ**: Jumlah ismiyyah susunan khabar muqaddam (عَلَيْكُمْ) dan mubtada muakhkhar (السَّلَامُ).\n• **أَنَا مُسْتَعِدٌّ** (*anā musta'iddun*): Mubtada (dhamir munfashil) dan Khabar (isim fa'il bertanwin dhammahtain).\n• **لِلتَّدْرِيبِ** (*lit-tadrīb*): Huruf jar لِ (*li*) diikuti masdar dari fi'il dabbara-yudabbiru (latihan/pelatihan).",
+    notes: `💡 **Catatan Kosakata / Kaidah:**
+• **عَلَيْكُمُ** (*'Alaikum*): Atas kalian / padamu (Huruf عَلَى = atas + -كُمْ = kalian/kamu jamak penghormatan).
+• **السَّلَامُ** (*As-salāmu*): Keselamatan / damai (Kata benda utama / mubtada muakhkhar berharakat dhammah).
+• **وَرَحْمَةُ** (*Wa rahmatu*): Dan rahmat / kasih sayang (Huruf sambung وَ = dan + kata رَحْمَة).
+• **اللَّهِ** (*Allāh*): Allah (Kata pemilik / mudhaf ilaih berharakat kasrah).
+• **أَنَا** (*Anā*): Saya (Kata ganti diri pertama / dhamir munfashil sebagai subjek kalimat).
+• **مُسْتَعِدٌّ** (*Musta'iddun*): Siap / bersedia (Kata sifat / isim fa'il sebagai predikat/khabar bertanwin dhammah).
+• **لِلتَّدْرِيبِ** (*Lit-tadrīb*): Untuk latihan (Huruf لِ = untuk + kata تَدْرِيب = latihan berharakat kasrah).
+
+**Fokus Tata Bahasa**: Menjawab salam menggunakan susunan kalimat nominal (*jumlah ismiyyah*). Bagian kedua menyatakan kesiapan diri (*Anā musta'iddun*) di mana subjek (*mubtada*) dipasangkan dengan kata sifat (*khabar*) bertanwin, dilanjutkan pelengkap tujuan (*lit-tadrīb*).`,
   },
 ];
 
@@ -577,8 +602,19 @@ const INITIAL_AI_SPEECH: ParsedAiSpeech = {
     "Ahlan wa sahlan bika fī barnāmaji ta'allumil-lughatil-'arabiyyah! Kayfa hāluka al-yawm?",
   translation:
     "Selamat datang di program pembelajaran bahasa Arab interaktif! Bagaimana kabarmu hari ini?",
-  notes:
-    "حَالٌ (Hāl) = Keadaan/Kabar. Pertanyaan 'كَيْفَ حَالُكَ؟' digunakan untuk menanyakan kabar lawan bicara laki-laki.",
+  notes: `💡 **Catatan Kosakata / Kaidah:**
+• **أَهْلًا وَسَهْلًا** (*Ahlan wa sahlan*): Selamat datang (Ungkapan sambutan ramah).
+• **بِكَ** (*Bika*): Padamu (Huruf jar bi = pada/dengan + dhomir ka = kamu pria tunggal).
+• **فِي** (*Fī*): Di dalam / pada (Huruf jar penunjuk tempat atau ruang lingkup).
+• **بَرْنَامَجِ** (*Barnāmaji*): Program / acara (Kata benda majrur dengan kasrah).
+• **تَعَلُّمِ** (*Ta'allumi*): Pembelajaran (Kata benda bentuk masdar).
+• **اللُّغَةِ** (*Al-lughati*): Bahasa (Kata benda berharakat kasrah).
+• **الْعَرَبِيَّةِ** (*Al-'arabiyyati*): Bahasa Arab (Kata sifat / na'at berharakat kasrah).
+• **كَيْفَ** (*Kayfa*): Bagaimana (Isim istifham / kata tanya menanyakan keadaan).
+• **حَالُكَ** (*Hāluka*): Keadaanmu / kabarmu (Kata hāl = kabar + dhomir ka = kamu pria).
+• **الْيَوْمَ** (*Al-yawma*): Hari ini (Keterangan waktu / zharaf zaman berharakat fathah).
+
+**Fokus Tata Bahasa**: Ungkapan penyambutan ramah diikuti susunan kata majemuk bertingkat (*idhafah*), dilanjutkan dengan kalimat tanya kabar menggunakan isim istifham *kayfa* dan keterangan waktu *al-yawm*.`,
   recommendations: DEFAULT_RECOMMENDATIONS,
 };
 
@@ -683,32 +719,44 @@ export default function ArabicLearningThreeColumns() {
     if (!option.arabic) return;
     setIsExplainingOption(true);
     try {
+      const promptText = `Tolong berikan Catatan Kosakata dan Kaidah tata bahasa untuk kalimat bahasa Arab berikut:
+Kalimat Arab: "${option.arabic}"
+Latin: "${option.latin}"
+Arti: "${option.translation}"
+
+WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI:
+Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kata per kata, dan penjelasan tata bahasa/morfologinya, lalu diakhiri Fokus Tata Bahasa:
+
+💡 **Catatan Kosakata / Kaidah:**
+• **[Kata Arab 1]** (*[Latin 1]*): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
+• **[Kata Arab 2]** (*[Latin 2]*): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
+• **[Kata Arab 3]** (*[Latin 3]*): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
+... (dan seterusnya untuk setiap kata dalam kalimat)
+
+**Fokus Tata Bahasa**: [Jelaskan kaidah Nahwu/Shorof susunan kalimat ini secara ringkas, padat, dan mudah dipahami oleh pemula].`;
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: [
-            {
-              role: "user",
-              content: `Mohon jelaskan secara terperinci kaidah tata bahasa (Nahwu & Shorof), kedudukan I'rab, serta mufradat (makna kosakata) dari kalimat target berikut:
-Kalimat: "${option.arabic}"
-Latin: "${option.latin}"
-Arti: "${option.translation}"
-
-Sajikan dalam format yang sangat rapi untuk pemula:
-1. 📖 **Kosakata Kunci (Mufradat)**: Uraikan kata per kata beserta bentuk akar kata / tasrif jika relevan.
-2. ⚖️ **Kaidah Nahwu & I'rab**: Jelaskan kedudukan kata (mubtada/khabar, fi'il/fa'il/maf'ul bih, huruf jar, zharaf, dll) beserta harakat akhirnya.
-3. 💡 **Tips Praktik**: Cara pengucapan atau konteks penggunaan yang tepat dalam percakapan sehari-hari.`,
-            },
-          ],
+          message: promptText,
+          mode: "reference",
         }),
       });
 
       const data = await res.json();
-      if (res.ok && data.text) {
+      const reply = data.response || data.text || data.message || "";
+      if (res.ok && reply) {
         setSelectedOptionNotes((prev) => ({
           ...prev,
-          notes: data.text,
+          notes: reply,
+        }));
+        // Update juga pada cache rekomendasi di currentAiSpeech agar tersimpan
+        setCurrentAiSpeech((prev) => ({
+          ...prev,
+          recommendations: prev.recommendations.map((r) =>
+            r.arabic === option.arabic ? { ...r, notes: reply } : r
+          ),
         }));
       }
     } catch (err) {
@@ -950,13 +998,16 @@ Sajikan dalam format yang sangat rapi untuk pemula:
         const lt = block.match(/(?:Latin|Transliterasi)[^\n:]*[:\n]\s*([^\n#]+)/i);
         const tr = block.match(/(?:Arti|Terjemahan)[^\n:]*[:\n]\s*([^\n#]+)/i);
         const kd = block.match(
-          /(?:Kaidah|Catatan|Mufradat)[^\n:]*[:\n]\s*([\s\S]*?)(?=(?:\n\s*[-*•]?\s*(?:Arab|Latin|Arti|Terjemahan|Opsi)|\n\s*$|$))/i
+          /(?:Kaidah|Catatan|Mufradat)[^\n:]*[:\n]\s*([\s\S]*?)(?=(?:\n\s*[-*•]?\s*(?:Arab|Latin|Arti|Terjemahan)\b|$))/i
         );
         if (ar && ar[1]) {
           const rawAr = ar[1].replace(/[*_#`~]/g, "").trim();
           const rawLt = lt ? lt[1].replace(/[*_#`~]/g, "").trim() : "";
           const rawTr = tr ? tr[1].replace(/[*_#`~"']/g, "").trim() : "";
-          const rawKd = kd ? kd[1].trim() : "";
+          let rawKd = kd ? kd[1].trim() : "";
+          if (rawKd && !rawKd.includes("Catatan Kosakata")) {
+            rawKd = `💡 **Catatan Kosakata / Kaidah:**\n${rawKd}`;
+          }
 
           // Jika kalimat Arab mengandung alternatif gabungan ("atau", "أو", "/"), pisahkan menjadi opsi bersih tersendiri
           if (/\s+(?:atau|\u0623\u0648)\s+|\s+[/|]\s+/i.test(rawAr)) {
@@ -1110,6 +1161,24 @@ Sajikan dalam format yang sangat rapi untuk pemula:
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "ar-SA";
     utterance.rate = speechSpeed;
+    utterance.pitch = 0.85; // Frekuensi nada lebih rendah khas suara pria
+
+    // Coba pilih suara laki-laki dari daftar suara browser jika tersedia
+    try {
+      const voices = window.speechSynthesis.getVoices();
+      const maleArVoice = voices.find(
+        (v) =>
+          v.lang.startsWith("ar") &&
+          (v.name.toLowerCase().includes("male") ||
+            v.name.toLowerCase().includes("hamed") ||
+            v.name.toLowerCase().includes("maged") ||
+            v.name.toLowerCase().includes("tarik"))
+      );
+      if (maleArVoice) {
+        utterance.voice = maleArVoice;
+      }
+    } catch (_) {}
+
     if (sourceId) setPlayingAudioId(sourceId);
     setIsAiSpeaking(true);
     utterance.onend = () => {
@@ -2278,9 +2347,9 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                   {/* Section: Penjelasan Kaidah & Kosakata */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                      <h4 className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
                         <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Analisis Kaidah Nahwu / Shorof & Kosakata</span>
+                        <span>💡 Catatan Kosakata / Kaidah (Translate Per Kata)</span>
                       </h4>
                       <button
                         type="button"
@@ -2290,23 +2359,23 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                         title="Minta AI membedah lebih mendalam"
                       >
                         <RefreshCw className={`w-3 h-3 ${isExplainingOption ? "animate-spin" : ""}`} />
-                        <span>{isExplainingOption ? "Menganalisis..." : "Perdalam Penjelasan"}</span>
+                        <span>{isExplainingOption ? "Menganalisis..." : "Perdalam / Refresh"}</span>
                       </button>
                     </div>
 
                     {isExplainingOption ? (
                       <div className="p-4 rounded-xl bg-slate-950/70 border border-amber-500/30 text-xs text-amber-300 flex items-center gap-2.5 animate-pulse">
                         <RefreshCw className="w-4 h-4 animate-spin text-amber-400 shrink-0" />
-                        <span>Menyusun uraian kaidah Nahwu, Shorof & mufradat untuk opsi ini...</span>
+                        <span>Menyusun uraian translate per kata, makna kosakata & fokus tata bahasa...</span>
                       </div>
                     ) : selectedOptionNotes.notes ? (
-                      <div className="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 text-xs text-slate-200 leading-relaxed shadow-sm">
+                      <div className="p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/20 text-xs text-slate-200 leading-relaxed shadow-sm">
                         <FormattedMessage content={selectedOptionNotes.notes} theme="amber" />
                       </div>
                     ) : (
                       <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-2.5">
                         <p className="text-xs text-slate-400">
-                          Belum ada catatan khusus yang tersimpan untuk kalimat ini.
+                          Sedang menyiapkan penjelasan dan translate per kata...
                         </p>
                         <button
                           type="button"
@@ -2314,7 +2383,7 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                           className="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 mx-auto transition-colors shadow-md"
                         >
                           <Sparkles className="w-3.5 h-3.5" />
-                          <span>Bedah Kaidah Kalimat Ini dengan AI</span>
+                          <span>Tampilkan Translate Per Kata & Kaidah</span>
                         </button>
                       </div>
                     )}
@@ -2503,6 +2572,9 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                       setActiveLeftMenu("notes");
                       setValidationResult(null);
                       setLiveTranscript("");
+                      if (!rec.notes) {
+                        handleExplainOptionWithAi(rec);
+                      }
                     }}
                     className={`group border rounded-xl p-2.5 transition-all space-y-1.5 shadow-md cursor-pointer ${
                       isSelected
@@ -2522,6 +2594,9 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                             e.stopPropagation();
                             setSelectedOptionNotes(rec);
                             setActiveLeftMenu("notes");
+                            if (!rec.notes) {
+                              handleExplainOptionWithAi(rec);
+                            }
                           }}
                           className={`px-1.5 py-0.5 rounded text-[9px] font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
                             rec.notes
@@ -2636,6 +2711,9 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                             setActiveLeftMenu("notes");
                             setValidationResult(null);
                             setLiveTranscript("");
+                            if (!rec.notes) {
+                              handleExplainOptionWithAi(rec);
+                            }
                           }}
                           className={`text-[10px] px-2.5 py-1 rounded-lg border flex items-center gap-1 transition-colors ${
                             isSelected
@@ -2721,8 +2799,36 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                   </span>
                 </div>
 
-                {/* Tombol Dengar Audio Target, Kaidah & Kustom Teks (Cukup Icon Saja Tanpa Tombol Opsi) */}
+                {/* Tombol Kecepatan Audio (Normal / Pelan), Dengar Audio Target, Kaidah & Kustom Teks */}
                 <div className="flex items-center gap-1.5 shrink-0">
+                  {/* Tombol Pengatur Kecepatan Suara: Normal (1.0x) vs Pelan / Tartil (0.75x) */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const nextSpeed = speechSpeed === 1.0 ? 0.75 : speechSpeed === 0.75 ? 0.6 : 1.0;
+                      setSpeechSpeed(nextSpeed);
+                      if (currentAudioRef.current) {
+                        currentAudioRef.current.playbackRate = nextSpeed;
+                      }
+                    }}
+                    className={`px-2 py-1 rounded-lg border text-[10px] font-bold flex items-center gap-1 transition-all shadow-sm ${
+                      speechSpeed < 1.0
+                        ? "bg-amber-950/80 text-amber-300 border-amber-600/70 ring-1 ring-amber-500/50"
+                        : "bg-slate-800/90 text-slate-300 border-slate-700 hover:text-white hover:bg-slate-700"
+                    }`}
+                    title={
+                      speechSpeed === 1.0
+                        ? "Kecepatan Normal (1.0x). Klik untuk mengubah ke Pelan / Tartil (0.75x)"
+                        : speechSpeed === 0.75
+                        ? "Kecepatan Pelan / Tartil (0.75x). Klik untuk Sangat Pelan (0.6x)"
+                        : "Kecepatan Sangat Pelan (0.6x). Klik untuk kembali ke Normal (1.0x)"
+                    }
+                    aria-label="Atur Kecepatan Suara"
+                  >
+                    <span>{speechSpeed === 1.0 ? "Normal" : speechSpeed === 0.75 ? "Pelan" : "Sangat Pelan"}</span>
+                    <span className="font-mono text-[9px] opacity-80">({speechSpeed}x)</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => {
@@ -2741,7 +2847,7 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                     onClick={() => playAudio(targetPractice.arabic, "target")}
                     disabled={isAiAudioLoading}
                     className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-teal-300 border border-slate-700 flex items-center justify-center transition-colors"
-                    title="Dengarkan contoh pelafalan audio teks Arab target ini"
+                    title={`Dengarkan contoh pelafalan teks Arab ini dengan kecepatan ${speechSpeed === 1.0 ? "Normal" : "Pelan"} (${speechSpeed}x)`}
                     aria-label="Dengar Contoh Pelafalan"
                   >
                     <Volume2 className="w-3.5 h-3.5 text-teal-400" />
@@ -3376,11 +3482,28 @@ Sajikan dalam format yang sangat rapi untuk pemula:
                     </button>
 
                     <button
-                      onClick={() => setSpeechSpeed(speechSpeed === 1.0 ? 0.75 : 1.0)}
-                      className="text-[10px] px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-medium whitespace-nowrap"
-                      title="Atur kecepatan audio pelan (0.75x) atau normal (1.0x)"
+                      type="button"
+                      onClick={() => {
+                        const nextSpeed = speechSpeed === 1.0 ? 0.75 : speechSpeed === 0.75 ? 0.6 : 1.0;
+                        setSpeechSpeed(nextSpeed);
+                        if (currentAudioRef.current) {
+                          currentAudioRef.current.playbackRate = nextSpeed;
+                        }
+                      }}
+                      className={`text-[10px] px-2.5 py-1 rounded-lg border font-semibold whitespace-nowrap transition-all shadow-sm ${
+                        speechSpeed < 1.0
+                          ? "bg-amber-950/80 text-amber-300 border-amber-600/70 ring-1 ring-amber-500/50"
+                          : "bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700"
+                      }`}
+                      title={
+                        speechSpeed === 1.0
+                          ? "Kecepatan Normal (1.0x). Klik untuk mengubah ke Pelan / Tartil (0.75x)"
+                          : speechSpeed === 0.75
+                          ? "Kecepatan Pelan / Tartil (0.75x). Klik untuk Sangat Pelan (0.6x)"
+                          : "Kecepatan Sangat Pelan (0.6x). Klik untuk kembali ke Normal (1.0x)"
+                      }
                     >
-                      {speechSpeed}x
+                      {speechSpeed === 1.0 ? "Normal (1.0x)" : speechSpeed === 0.75 ? "Pelan (0.75x)" : "Sangat Pelan (0.6x)"}
                     </button>
                   </div>
 
