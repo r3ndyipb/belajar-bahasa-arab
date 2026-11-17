@@ -2431,11 +2431,9 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
                         <span>Menyusun uraian translate per kata, makna kosakata & fokus tata bahasa...</span>
                       </div>
                     ) : selectedOptionNotes.notes ? (
-                      <div className="p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/20 text-xs text-slate-200 leading-relaxed shadow-sm">
+                      <div className="p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/20 text-xs text-slate-200 leading-relaxed shadow-sm text-left" dir="ltr">
                         <FormattedMessage
-                          content={selectedOptionNotes.notes
-                            .replace(/^[ \t]*(?:💡|📖)?\s*\*?\*?Catatan Kosakata\s*[/&]\s*Kaidah:?\*?\*?[ \t]*\n*/i, "")
-                            .trim()}
+                          content={selectedOptionNotes.notes}
                           theme="amber"
                         />
                       </div>
@@ -3793,10 +3791,11 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
 
               {/* Catatan / Mufradat bila ada dengan FormattedMessage */}
               {currentAiSpeech.notes && (
-                <div className="mt-1.5 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-[10px] text-slate-300">
-                  <span className="font-bold text-amber-300 block mb-0.5">
-                    💡 Catatan Kosakata / Kaidah:
-                  </span>
+                <div className="mt-1.5 p-2 rounded-xl bg-slate-900/80 border border-slate-800 text-[10px] text-slate-300 text-left" dir="ltr">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-300 mb-1 text-left" dir="ltr">
+                    <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Catatan Kosakata & Kaidah</span>
+                  </div>
                   <FormattedMessage
                     content={currentAiSpeech.notes}
                     theme="emerald"

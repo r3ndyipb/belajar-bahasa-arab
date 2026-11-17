@@ -27,6 +27,12 @@ function sanitizeMarkdown(content: string): string {
 
   let text = content.replace(/\r\n/g, "\n");
 
+  // 0. Bersihkan semua variasi baris judul 'Catatan Kosakata / Kaidah' agar tidak dobel/tumpang-tindih
+  text = text.replace(
+    /^[ \t]*(?:[-*•]\s*)?(?:\*{1,3})?(?:💡|📖)?\s*(?:\*{1,3})?Catatan\s+(?:Kosakata|Kaidah|Mufradat)(?:[ \t]*[/&][ \t]*(?:Kosakata|Kaidah|Mufradat))?(?:[ \t]*\([^)]+\))?:?(?:\*{1,3})?[ \t]*\n*/gim,
+    ""
+  );
+
   // 1. Pisahkan bullet inline (misal "text. • Kata ...") menjadi baris baru list markdown (- )
   text = text.replace(/([.!?)]|[^\n])\s+[•●◦⁃]\s+/g, "$1\n\n- ");
 
@@ -95,7 +101,7 @@ export default function FormattedMessage({
       : "bg-sky-950/80 text-sky-200 border-sky-900/60";
 
   return (
-    <div className="formatted-message-container text-xs sm:text-sm leading-relaxed break-words">
+    <div className="formatted-message-container text-xs sm:text-sm leading-relaxed break-words text-left" dir="ltr">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -161,7 +167,7 @@ export default function FormattedMessage({
             const isFokusTataBahasa = /Fokus Tata Bahasa/i.test(rawText);
             if (isFokusTataBahasa && theme === "amber") {
               return (
-                <div className="mt-3.5 p-3 rounded-xl bg-amber-950/40 border border-amber-500/35 text-amber-200 text-xs sm:text-sm leading-relaxed shadow-sm">
+                <div className="mt-3.5 p-3 rounded-xl bg-amber-950/40 border border-amber-500/35 text-amber-200 text-xs sm:text-sm leading-relaxed shadow-sm text-left" dir="ltr">
                   {children}
                 </div>
               );
@@ -169,12 +175,12 @@ export default function FormattedMessage({
 
             return (
               <p
-                className={`mb-2 last:mb-0 ${
+                className={`mb-2 last:mb-0 text-left ${
                   isPureArabic
                     ? "font-serif text-base sm:text-lg text-emerald-200 leading-loose text-right"
-                    : "text-slate-200 leading-relaxed"
+                    : "text-slate-200 leading-relaxed text-left"
                 }`}
-                dir={isPureArabic ? "rtl" : "auto"}
+                dir={isPureArabic ? "rtl" : "ltr"}
               >
                 {children}
               </p>
@@ -187,17 +193,17 @@ export default function FormattedMessage({
             <em className="italic text-teal-300 font-medium">{children}</em>
           ),
           h1: ({ children }) => (
-            <h1 className="text-base sm:text-lg font-bold text-slate-100 mt-3 mb-1.5 border-b border-slate-800 pb-1">
+            <h1 className="text-base sm:text-lg font-bold text-slate-100 mt-3 mb-1.5 border-b border-slate-800 pb-1 text-left" dir="ltr">
               {children}
             </h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-sm sm:text-base font-bold text-slate-100 mt-2.5 mb-1 border-b border-slate-800/60 pb-0.5">
+            <h2 className="text-sm sm:text-base font-bold text-slate-100 mt-2.5 mb-1 border-b border-slate-800/60 pb-0.5 text-left" dir="ltr">
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 className={`text-xs sm:text-sm font-bold ${accentColor} mt-2 mb-1`}>
+            <h3 className={`text-xs sm:text-sm font-bold ${accentColor} mt-2 mb-1 text-left`} dir="ltr">
               {children}
             </h3>
           ),
@@ -205,28 +211,29 @@ export default function FormattedMessage({
             <ul
               className={
                 theme === "amber"
-                  ? "my-2.5 space-y-2 list-none p-0"
-                  : "list-disc pl-5 my-1.5 space-y-1 text-slate-300"
+                  ? "my-2.5 space-y-2 list-none p-0 text-left"
+                  : "list-disc pl-5 my-1.5 space-y-1 text-slate-300 text-left"
               }
+              dir="ltr"
             >
               {children}
             </ul>
           ),
           ol: ({ children }) => (
-            <ol className="list-decimal pl-5 my-1.5 space-y-1 text-slate-300">
+            <ol className="list-decimal pl-5 my-1.5 space-y-1 text-slate-300 text-left" dir="ltr">
               {children}
             </ol>
           ),
           li: ({ children }) => {
             if (theme === "amber") {
               return (
-                <li className="p-2.5 sm:p-3 rounded-xl bg-slate-900/90 border border-amber-500/25 text-slate-200 text-xs sm:text-sm shadow-sm hover:border-amber-500/40 transition-colors leading-relaxed flex items-start gap-2.5">
+                <li className="p-2.5 sm:p-3 rounded-xl bg-slate-900/90 border border-amber-500/25 text-slate-200 text-xs sm:text-sm shadow-sm hover:border-amber-500/40 transition-colors leading-relaxed flex items-start gap-2.5 text-left" dir="ltr">
                   <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0" />
-                  <div className="flex-1 min-w-0">{children}</div>
+                  <div className="flex-1 min-w-0 text-left" dir="ltr">{children}</div>
                 </li>
               );
             }
-            return <li className="leading-relaxed">{children}</li>;
+            return <li className="leading-relaxed text-left" dir="ltr">{children}</li>;
           },
           code: ({ children }) => (
             <code className="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono text-[11px] border border-slate-700">
