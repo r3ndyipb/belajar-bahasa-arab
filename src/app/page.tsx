@@ -40,6 +40,8 @@ import {
   Home,
   ShoppingBag,
   Coffee,
+  ChevronDown,
+  History,
 } from "lucide-react";
 import FormattedMessage from "./components/FormattedMessage";
 
@@ -983,6 +985,7 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
   );
   const [testAudioStatus, setTestAudioStatus] = useState<string | null>(null);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [isVoiceHistoryMinimized, setIsVoiceHistoryMinimized] = useState<boolean>(true);
 
   const currentScenario =
     CONVERSATION_SCENARIOS.find((s) => s.id === activeScenarioId) ||
@@ -2810,36 +2813,63 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
               })}
             </div>
 
-            {/* Riwayat Percakapan Suara Pengguna (Ringkas) */}
+            {/* Riwayat Percakapan Suara Pengguna (Collapsible / Default Minimized) */}
             {messages.filter((m) => m.sender === "user").length > 0 && (
-              <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl p-2 space-y-1">
-                <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block">
-                  Riwayat Suara Terakhir:
-                </span>
-                <div className="space-y-1 max-h-24 overflow-y-auto text-xs">
-                  {messages
-                    .filter((m) => m.sender === "user")
-                    .slice(-2)
-                    .map((msg) => (
-                      <div
-                        key={msg.id}
-                        onClick={() => setLiveTranscript(msg.text)}
-                        className="p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800/80 text-slate-200 flex items-center justify-between gap-2 cursor-pointer transition-colors"
-                        title="Klik untuk memasukkan kembali teks ini ke kotak ucapan"
-                      >
-                        <span
-                          className="font-serif text-emerald-300 leading-relaxed flex-1"
-                          style={{ fontSize: `${Math.max(16, arabicFontSize - 4)}px` }}
-                          dir="rtl"
+              <div className="bg-slate-950/40 border border-slate-800/60 rounded-xl overflow-hidden transition-all shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setIsVoiceHistoryMinimized((prev) => !prev)}
+                  className="w-full p-2 flex items-center justify-between text-[10px] text-slate-400 hover:text-slate-200 transition-colors bg-slate-900/40 hover:bg-slate-900/70"
+                  title={isVoiceHistoryMinimized ? "Klik untuk melihat riwayat suara" : "Klik untuk meminimalkan"}
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <History className="w-3 h-3 text-teal-400 shrink-0" />
+                    <span className="font-semibold uppercase tracking-wider truncate">
+                      Riwayat Suara Terakhir
+                    </span>
+                    <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-[9px] text-slate-400 font-normal">
+                      {messages.filter((m) => m.sender === "user").length}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0 text-slate-500">
+                    <span className="text-[9px]">
+                      {isVoiceHistoryMinimized ? "Buka" : "Tutup"}
+                    </span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                        isVoiceHistoryMinimized ? "" : "rotate-180"
+                      }`}
+                    />
+                  </div>
+                </button>
+
+                {!isVoiceHistoryMinimized && (
+                  <div className="p-2 space-y-1 max-h-32 overflow-y-auto text-xs border-t border-slate-800/60 bg-slate-950/20">
+                    {messages
+                      .filter((m) => m.sender === "user")
+                      .slice(-4)
+                      .map((msg) => (
+                        <div
+                          key={msg.id}
+                          onClick={() => setLiveTranscript(msg.text)}
+                          className="p-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-800/90 border border-slate-800/80 text-slate-200 flex items-center justify-between gap-2 cursor-pointer transition-colors"
+                          title="Klik untuk memasukkan kembali teks ini ke kotak ucapan"
                         >
-                          {msg.text}
-                        </span>
-                        <span className="text-[9px] text-slate-500 shrink-0">
-                          {msg.timestamp}
-                        </span>
-                      </div>
-                    ))}
-                </div>
+                          <span
+                            className="font-serif text-emerald-300 leading-relaxed flex-1"
+                            style={{ fontSize: `${Math.max(16, arabicFontSize - 4)}px` }}
+                            dir="rtl"
+                          >
+                            {msg.text}
+                          </span>
+                          <span className="text-[9px] text-slate-500 shrink-0">
+                            {msg.timestamp}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
