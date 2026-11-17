@@ -620,9 +620,7 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     arabic: "بِخَيْرٍ وَالْحَمْدُ لِلَّهِ، وَكَيْفَ حَالُكَ أَنْتَ يَا أُسْتَاذُ؟",
     latin: "Bikhayrin wal-hamdu lillāh, wa kayfa hāluka anta yā ustādz?",
     translation: "Alhamdulillah kabar baik, dan bagaimana kabarmu wahai ustadz?",
-    notes: `💡 **Catatan Kosakata / Kaidah:**
-
-- **بِخَيْرٍ** (*Bi-khayr*): Baik / dalam kebaikan (Huruf jar بِ = dalam/dengan + kata خَيْرٍ = kebaikan/kondisi baik).
+    notes: `- **بِخَيْرٍ** (*Bi-khayr*): Baik / dalam kebaikan (Huruf jar بِ = dalam/dengan + kata خَيْرٍ = kebaikan/kondisi baik).
 - **وَالْحَمْدُ** (*Wal-hamdu*): Dan segala puji (Huruf sambung وَ = dan + الْحَمْدُ = segala pujian).
 - **لِلَّهِ** (*Lillāh*): Bagi Allah (Huruf jar لِ = untuk/milik + lafadz jalalah اللَّه).
 - **وَكَيْفَ** (*Wa kayfa*): Dan bagaimana (Kata tanya / isim istifham untuk menanyakan keadaan).
@@ -637,9 +635,7 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     arabic: "أَهْلًا بِكَ، أُرِيدُ أَنْ أَتَعَلَّمَ الْمُحَادَثَةَ الْعَرَبِيَّةَ الْيَوْمَ.",
     latin: "Ahlan bik, urīdu an ata'allamal-muhādatsatal-'arabiyyata al-yawm.",
     translation: "Selamat datang, saya ingin belajar percakapan bahasa Arab hari ini.",
-    notes: `💡 **Catatan Kosakata / Kaidah:**
-
-- **أَهْلًا بِكَ** (*Ahlan bika*): Selamat datang padamu (Ungkapan keramahan menyambut lawan bicara pria).
+    notes: `- **أَهْلًا بِكَ** (*Ahlan bika*): Selamat datang padamu (Ungkapan keramahan menyambut lawan bicara pria).
 - **أُرِيدُ** (*Urīdu*): Saya ingin (Kata kerja masa kini / fi'il mudhari' untuk subjek saya/أَنَا).
 - **أَنْ** (*An*): Untuk / agar (Huruf penjelas maksud / amil nashab yang menashabkan fi'il berikutnya).
 - **أَتَعَلَّمَ** (*Ata'allama*): Saya belajar (Fi'il mudhari' berharakat akhir fathah karena dipengaruhi huruf أَنْ).
@@ -653,9 +649,7 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     arabic: "عَلَيْكُمُ السَّلَامُ وَرَحْمَةُ اللَّهِ، أَنَا مُسْتَعِدٌّ لِلتَّدْرِيبِ!",
     latin: "'Alaikumus-salāmu wa rahmatullāh, anā musta'iddun lit-tadrīb!",
     translation: "Wa'alaikumussalam warahmatullah, saya siap untuk latihan!",
-    notes: `💡 **Catatan Kosakata / Kaidah:**
-
-- **عَلَيْكُمُ** (*'Alaikum*): Atas kalian / padamu (Huruf عَلَى = atas + -كُمْ = kalian/kamu jamak penghormatan).
+    notes: `- **عَلَيْكُمُ** (*'Alaikum*): Atas kalian / padamu (Huruf عَلَى = atas + -كُمْ = kalian/kamu jamak penghormatan).
 - **السَّلَامُ** (*As-salāmu*): Keselamatan / damai (Kata benda utama / mubtada muakhkhar berharakat dhammah).
 - **وَرَحْمَةُ** (*Wa rahmatu*): Dan rahmat / kasih sayang (Huruf sambung وَ = dan + kata رَحْمَة).
 - **اللَّهِ** (*Allāh*): Allah (Kata pemilik / mudhaf ilaih berharakat kasrah).
@@ -674,9 +668,7 @@ const INITIAL_AI_SPEECH: ParsedAiSpeech = {
     "Ahlan wa sahlan bika fī barnāmaji ta'allumil-lughatil-'arabiyyah! Kayfa hāluka al-yawm?",
   translation:
     "Selamat datang di program pembelajaran bahasa Arab interaktif! Bagaimana kabarmu hari ini?",
-  notes: `💡 **Catatan Kosakata / Kaidah:**
-
-- **أَهْلًا وَسَهْلًا** (*Ahlan wa sahlan*): Selamat datang (Ungkapan sambutan ramah).
+  notes: `- **أَهْلًا وَسَهْلًا** (*Ahlan wa sahlan*): Selamat datang (Ungkapan sambutan ramah).
 - **بِكَ** (*Bika*): Padamu (Huruf jar bi = pada/dengan + dhomir ka = kamu pria tunggal).
 - **فِي** (*Fī*): Di dalam / pada (Huruf jar penunjuk tempat atau ruang lingkup).
 - **بَرْنَامَجِ** (*Barnāmaji*): Program / acara (Kata benda majrur dengan kasrah).
@@ -798,10 +790,7 @@ Kalimat Arab: "${option.arabic}"
 Latin: "${option.latin}"
 Arti: "${option.translation}"
 
-WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI:
-Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kata per kata, dan penjelasan tata bahasa/morfologinya, lalu diakhiri Fokus Tata Bahasa:
-
-💡 **Catatan Kosakata / Kaidah:**
+WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGAN TULIS ULANG JUDUL):
 • **[Kata Arab 1]** (*[Latin 1]*): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
 • **[Kata Arab 2]** (*[Latin 2]*): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
 • **[Kata Arab 3]** (*[Latin 3]*): [Arti kata per kata] ([Penjelasan tata bahasa/morfologi]).
@@ -1120,9 +1109,6 @@ Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kat
           const rawLt = lt ? lt[1].replace(/[*_#`~]/g, "").trim() : "";
           const rawTr = tr ? tr[1].replace(/[*_#`~"']/g, "").trim() : "";
           let rawKd = kd ? kd[1].trim() : "";
-          if (rawKd && !rawKd.includes("Catatan Kosakata")) {
-            rawKd = `💡 **Catatan Kosakata / Kaidah:**\n${rawKd}`;
-          }
 
           // Jika kalimat Arab mengandung alternatif gabungan ("atau", "أو", "/"), pisahkan menjadi opsi bersih tersendiri
           if (/\s+(?:atau|\u0623\u0648)\s+|\s+[/|]\s+/i.test(rawAr)) {
@@ -2422,20 +2408,20 @@ Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kat
 
                   {/* Section: Penjelasan Kaidah & Kosakata */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                        <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                        <span>💡 Catatan Kosakata / Kaidah (Translate Per Kata)</span>
+                    <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-800/60">
+                      <h4 className="text-xs font-semibold text-amber-300 flex items-center gap-1.5 min-w-0">
+                        <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span className="truncate">Catatan Kosakata & Kaidah</span>
                       </h4>
                       <button
                         type="button"
                         onClick={() => handleExplainOptionWithAi(selectedOptionNotes)}
                         disabled={isExplainingOption}
-                        className="text-[10px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold disabled:opacity-50 transition-colors"
-                        title="Minta AI membedah lebih mendalam"
+                        className="px-2 py-0.5 rounded-md bg-amber-500/10 hover:bg-amber-500/20 text-[10px] text-amber-300 hover:text-amber-200 border border-amber-500/30 flex items-center gap-1 font-medium disabled:opacity-50 transition-colors shrink-0"
+                        title="Perdalam / Refresh pembedahan kaidah kata per kata"
                       >
-                        <RefreshCw className={`w-3 h-3 ${isExplainingOption ? "animate-spin" : ""}`} />
-                        <span>{isExplainingOption ? "Menganalisis..." : "Perdalam / Refresh"}</span>
+                        <RefreshCw className={`w-2.5 h-2.5 ${isExplainingOption ? "animate-spin" : ""}`} />
+                        <span>{isExplainingOption ? "Memuat..." : "Perdalam"}</span>
                       </button>
                     </div>
 
@@ -2446,7 +2432,12 @@ Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kat
                       </div>
                     ) : selectedOptionNotes.notes ? (
                       <div className="p-3.5 rounded-xl bg-slate-950/90 border border-amber-500/20 text-xs text-slate-200 leading-relaxed shadow-sm">
-                        <FormattedMessage content={selectedOptionNotes.notes} theme="amber" />
+                        <FormattedMessage
+                          content={selectedOptionNotes.notes
+                            .replace(/^[ \t]*(?:💡|📖)?\s*\*?\*?Catatan Kosakata\s*[/&]\s*Kaidah:?\*?\*?[ \t]*\n*/i, "")
+                            .trim()}
+                          theme="amber"
+                        />
                       </div>
                     ) : (
                       <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-center space-y-2.5">
