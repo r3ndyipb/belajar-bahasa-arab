@@ -134,6 +134,15 @@ const CONVERSATION_SCENARIOS: ConversationScenario[] = [
     starterUserMessage: "As-salāmu 'alaikum, saya ingin latihan bicara bahasa Arab dari tingkat dasar (pemula).",
   },
   {
+    id: "kosakata_benda",
+    name: "Latihan Kata / Benda Sekitar (Per Kata)",
+    emoji: "🪑",
+    category: "Kosakata",
+    description: "Latihan melafalkan kata per kata benda di sekitar kita (kitāb, maktab, bāb, nāfidzah, gurfah, dll) tanpa kalimat panjang.",
+    prompt: "Latihan kata-kata / kosakata benda di sekitar kita (per kata, bukan kalimat panjang). Bimbing pengguna melafalkan kosakata tunggal seperti kitāb (buku), bāb (pintu), nāfidzah/syubbāk (jendela), gurfah (kamar), maktab (meja), qalam (pena), dll.",
+    starterUserMessage: "As-salāmu 'alaikum. Saya ingin latihan kata-kata / kosakata benda di sekitar kita per kata (bukan kalimat panjang).",
+  },
+  {
     id: "custom",
     name: "Topik Bebas / Skenario Kustom",
     emoji: "✨",
@@ -1506,17 +1515,24 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
           ? scenarioNameOverride
           : currentScenario.name;
 
+      const isWordMode =
+        activeScenarioId === "kosakata_benda" ||
+        /(?:per\s*kata|kata[\s-]*kata|kosakata|mufradat|jangan\s*kalimat|bukan\s*kalimat|benda\s*(?:di\s*)?sekitar|nama[\s-]*nama\s*benda|vocab|single\s*word)/i.test(
+          `${textToSend} ${targetPrompt || ""} ${targetName || ""}`
+        );
+
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: textToSend.trim(),
-          mode:
-            activeScenarioId === "pemula"
-              ? "beginner"
-              : activeScenarioId === "pasar"
-              ? "market"
-              : "general",
+          mode: isWordMode
+            ? "vocab"
+            : activeScenarioId === "pemula"
+            ? "beginner"
+            : activeScenarioId === "pasar"
+            ? "market"
+            : "general",
           scenarioPrompt: targetPrompt,
           scenarioName: targetName,
           sessionId,
@@ -1584,9 +1600,16 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
     setShowScenarioModal(false);
 
     const scenarioObj = CONVERSATION_SCENARIOS.find((s) => s.id === scenarioId);
-    const starterMsg =
-      scenarioObj?.starterUserMessage ||
-      "As-salāmu 'alaikum, mari kita mulai percakapan sesuai suasana ini.";
+    let starterMsg = scenarioObj?.starterUserMessage;
+
+    // Jika pengguna menggunakan skenario kustom atau mengisi freetext sendiri:
+    if (scenarioId === "custom" && promptText.trim()) {
+      starterMsg = `As-salāmu 'alaikum. Saya ingin latihan sesuai instruksi ini: "${promptText.trim()}". Mohon bimbing saya sesuai instruksi tersebut.`;
+    } else if (!starterMsg) {
+      starterMsg = promptText.trim()
+        ? `As-salāmu 'alaikum. Saya ingin latihan: "${promptText.trim()}".`
+        : "As-salāmu 'alaikum, mari kita mulai percakapan sesuai suasana ini.";
+    }
 
     handleSendVoiceMessage(starterMsg, promptText, scenarioObj?.name);
   };

@@ -99,21 +99,73 @@ Respon ini adalah bahan referensi bacaan tanpa audio.
       contextualSystemPrompt += `\nFOKUS MODE: Simulasi percakapan di pasar / belanja (فِي السُّوق). Berikan contoh tawar-menawar harga, menanyakan barang, dan hitungan uang.`;
     }
 
+    // Deteksi apakah pengguna atau skenario menginstruksikan latihan per kata / kosakata / benda di sekitar (bukan kalimat)
+    const combinedInstructions = `${message} ${scenarioPrompt || ""} ${scenarioName || ""}`;
+    const isWordPractice =
+      mode === "vocab" ||
+      /(?:per\s*kata|kata[\s-]*kata|kosakata|mufradat|jangan\s*kalimat|bukan\s*kalimat|benda\s*(?:di\s*)?sekitar|nama[\s-]*nama\s*benda|vocab|single\s*word)/i.test(
+        combinedInstructions
+      );
+
     if (
       mode !== "reference" &&
       scenarioPrompt &&
       typeof scenarioPrompt === "string" &&
       scenarioPrompt.trim()
     ) {
-      contextualSystemPrompt += `\n\nSKENARIO & SUASANA PERCAKAPAN AKTIF${
+      contextualSystemPrompt += `\n\nSKENARIO & INSTRUKSI KHUSUS PENGGUNA${
         scenarioName ? ` (${scenarioName})` : ""
       }:
-${scenarioPrompt.trim()}
+"${scenarioPrompt.trim()}"
 
-INSTRUKSI KHUSUS SKENARIO:
-1. Posisikan diri Anda (Mudarris AI) dan pengguna sesuai peran dalam situasi/suasana di atas.
-2. Gunakan kosakata (mufradat) dan ungkapan Arab sehari-hari yang relevan dengan konteks ini.
-3. Tetap sediakan harakat lengkap (tasykil), transliterasi Latin, arti Indonesia, dan berikan rekomendasi pilihan jawaban pengguna yang sesuai alur situasi ini.`;
+ATURAN PENERAPAN INSTRUKSI:
+1. PENTING & PRIORITAS UTAMA: Patuhi instruksi khusus pengguna di atas! Jika instruksi meminta bentuk latihan tertentu (seperti latihan per kata, kosakata benda di sekitar, bukan kalimat, gaya bahasa tertentu), SESUAIKAN FORMAT DAN ISI RESPON ANDA SEPENUHNYA mengikuti instruksi tersebut.
+2. Tetap sediakan harakat lengkap (tasykil), transliterasi Latin, arti Indonesia, dan berikan rekomendasi pilihan yang 100% selaras dengan instruksi ini.`;
+    }
+
+    if (isWordPractice && mode !== "reference") {
+      contextualSystemPrompt += `\n\n🚨 ATURAN MUTLAK MODE LATIHAN KOSAKATA / PER KATA (BUKAN KALIMAT PANJANG):
+Pengguna secara tegas meminta: LATIHAN KATA PER KATA / KOSAKATA BENDA TUNGGAL (SEPERTI BENDA DI SEKITAR KITA: BUKU, MEJA, PINTU, JENDELA, KAMAR, PENA, DLL), JANGAN BERBENTUK KALIMAT PANJANG!
+
+INSTRUKSI FORMAT KHUSUS INI MENGALAHKAN ATURAN KALIMAT PANJANG:
+1. Kalam Arab Utama:
+   - Sajikan HANYA 1 KATA BENDA / KOSAKATA TUNGGAL (atau maksimal 2 kata/frasa penunjuk pendek seperti "كِتَابٌ" atau "هَذَا كِتَابٌ").
+   - DILARANG menyusun kalimat percakapan panjang yang rumit.
+   - Contoh Kalam Arab:
+     🗣️ **Kalam Arab (العربية)**: كِتَابٌ (atau هَذَا كِتَابٌ)
+     📖 **Transliterasi**: Kitābun (atau Hādzā kitābun)
+     🇮🇩 **Terjemahan**: Buku (atau Ini buku)
+     💡 **Mufradat & Catatan**:
+     • كِتَابٌ (Kitābun): Buku (Isim mufrad mudzakkar bertanwin dhammah).
+     • Fokus Tata Bahasa: Kata benda tunggal (isim mufrad) dalam keadaan rafa' dengan tanda dhammah tanwin.
+
+2. Rekomendasi Jawaban Pengguna (Opsi 1, Opsi 2, Opsi 3):
+   - SEMUA PILIHAN REKOMENDASI WAJIB BERUPA KOSAKATA TUNGGAL / BENDA DI SEKITAR KITA (BUKAN KALIMAT)!
+   - Contoh Opsi 1:
+     * Opsi 1:
+       - Arab: نَافِذَةٌ
+       - Latin: Nāfidzatun
+       - Arti: Jendela
+       - Kaidah:
+         • نَافِذَةٌ (Nāfidzatun): Jendela (Isim mufrad muannats berakhiran ta marbuthah).
+         • Fokus Tata Bahasa: Kata benda tunggal jenis feminin (muannats).
+   - Contoh Opsi 2:
+     * Opsi 2:
+       - Arab: بَابٌ
+       - Latin: Bābun
+       - Arti: Pintu
+       - Kaidah:
+         • بَابٌ (Bābun): Pintu (Isim mufrad mudzakkar).
+         • Fokus Tata Bahasa: Kata benda tunggal jenis maskulin (mudzakkar).
+   - Contoh Opsi 3:
+     * Opsi 3:
+       - Arab: غُرْفَةٌ
+       - Latin: Gurfatun
+       - Arti: Kamar
+       - Kaidah:
+         • غُرْفَةٌ (Gurfatun): Kamar (Isim mufrad muannats).
+         • Fokus Tata Bahasa: Kata benda tunggal jenis feminin (muannats).
+3. Jangan pernah melanggar aturan ini dengan mengeluarkan kalimat percakapan panjang saat mode ini aktif!`;
     }
 
     const payload = {
