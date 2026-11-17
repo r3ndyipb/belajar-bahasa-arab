@@ -33,17 +33,24 @@ function sanitizeMarkdown(content: string): string {
     ""
   );
 
-  // 1. Pisahkan bullet inline (misal "text. • Kata ...") menjadi baris baru list markdown (- )
-  text = text.replace(/([.!?)]|[^\n])\s+[•●◦⁃]\s+/g, "$1\n\n- ");
+  // 0. Bersihkan leading/trailing asterisks anomali pembungkus seluruh pesan
+  text = text.replace(/^\s*\*{2,}\s*(?=[*•\-\w\u0600-\u06FF])/g, "");
+  text = text.replace(/(?<=[\w\u0600-\u06FF.!?)]\s*)\*{2,}\s*$/g, "");
 
-  // 2. Ubah bullet di awal baris menjadi list item markdown (- )
-  text = text.replace(/^[ \t]*[•●◦⁃][ \t]*/gm, "- ");
+  // 1. Pecah Fokus Tata Bahasa jika inline (misal ". * Fokus Tata Bahasa" atau "* Fokus Tata Bahasa")
+  text = text.replace(/([.!?)]|[^\n])\s*(?:[-*•]\s*)?\*?\*?Fokus\s+Tata\s+Bahasa\*?\*?:?\s*/gi, "$1\n\n**Fokus Tata Bahasa**: ");
 
-  // 3. Pastikan ada baris kosong sebelum list markdown agar tidak tergabung ke teks sebelumnya
+  // 2. Pisahkan bullet / asterisk inline (misal "... tunggal). * بِخَيْرٍ" atau "... tunggal). • بِخَيْرٍ")
+  text = text.replace(/([.!?)]|[^\n])\s+[*•●◦⁃]\s+(?=[\u0600-\u06FF\w\[])/g, "$1\n\n- ");
+
+  // 3. Ubah bullet atau asterisk di awal baris menjadi list item markdown (- )
+  text = text.replace(/^[ \t]*[*•●◦⁃][ \t]+/gm, "- ");
+
+  // 4. Pastikan ada baris kosong sebelum list markdown agar tidak tergabung ke teks sebelumnya
   text = text.replace(/([^\n])\n(- [^\n]+)/g, "$1\n\n$2");
 
-  // 4. Pastikan ada baris kosong sebelum Fokus Tata Bahasa
-  text = text.replace(/([^\n])\n+(\*?\*?Fokus Tata Bahasa)/gi, "$1\n\n$2");
+  // 5. Jika ada kata Arab dan Latin tanpa bold standar: "- أَنَا (Anā):", perindah jadi "- **أَنَا** (*Anā*):"
+  text = text.replace(/^- ([^\s*]+)\s+\(\*?([^\s*)]+)\*?\):/gm, "- **$1** (*$2*):");
 
   // 5. Collapse accidental blank lines inside tables (between rows starting and ending with |)
   while (/(\|[^\n]+\|)[ \t]*\n[ \t]*\n+(?=[ \t]*\|)/.test(text)) {
