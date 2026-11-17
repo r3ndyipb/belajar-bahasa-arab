@@ -27,7 +27,19 @@ function sanitizeMarkdown(content: string): string {
 
   let text = content.replace(/\r\n/g, "\n");
 
-  // 1. Collapse accidental blank lines inside tables (between rows starting and ending with |)
+  // 1. Pisahkan bullet inline (misal "text. • Kata ...") menjadi baris baru list markdown (- )
+  text = text.replace(/([.!?)]|[^\n])\s+[•●◦⁃]\s+/g, "$1\n\n- ");
+
+  // 2. Ubah bullet di awal baris menjadi list item markdown (- )
+  text = text.replace(/^[ \t]*[•●◦⁃][ \t]*/gm, "- ");
+
+  // 3. Pastikan ada baris kosong sebelum list markdown agar tidak tergabung ke teks sebelumnya
+  text = text.replace(/([^\n])\n(- [^\n]+)/g, "$1\n\n$2");
+
+  // 4. Pastikan ada baris kosong sebelum Fokus Tata Bahasa
+  text = text.replace(/([^\n])\n+(\*?\*?Fokus Tata Bahasa)/gi, "$1\n\n$2");
+
+  // 5. Collapse accidental blank lines inside tables (between rows starting and ending with |)
   while (/(\|[^\n]+\|)[ \t]*\n[ \t]*\n+(?=[ \t]*\|)/.test(text)) {
     text = text.replace(/(\|[^\n]+\|)[ \t]*\n[ \t]*\n+(?=[ \t]*\|)/g, "$1\n");
   }
@@ -146,6 +158,15 @@ export default function FormattedMessage({
             const latinChars = rawText.match(/[a-zA-Z]/g) || [];
             const isPureArabic = arabicChars.length > 0 && latinChars.length === 0;
 
+            const isFokusTataBahasa = /Fokus Tata Bahasa/i.test(rawText);
+            if (isFokusTataBahasa && theme === "amber") {
+              return (
+                <div className="mt-3.5 p-3 rounded-xl bg-amber-950/40 border border-amber-500/35 text-amber-200 text-xs sm:text-sm leading-relaxed shadow-sm">
+                  {children}
+                </div>
+              );
+            }
+
             return (
               <p
                 className={`mb-2 last:mb-0 ${
@@ -181,7 +202,13 @@ export default function FormattedMessage({
             </h3>
           ),
           ul: ({ children }) => (
-            <ul className="list-disc pl-5 my-1.5 space-y-1 text-slate-300">
+            <ul
+              className={
+                theme === "amber"
+                  ? "my-2.5 space-y-2 list-none p-0"
+                  : "list-disc pl-5 my-1.5 space-y-1 text-slate-300"
+              }
+            >
               {children}
             </ul>
           ),
@@ -190,7 +217,17 @@ export default function FormattedMessage({
               {children}
             </ol>
           ),
-          li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+          li: ({ children }) => {
+            if (theme === "amber") {
+              return (
+                <li className="p-2.5 sm:p-3 rounded-xl bg-slate-900/90 border border-amber-500/25 text-slate-200 text-xs sm:text-sm shadow-sm hover:border-amber-500/40 transition-colors leading-relaxed flex items-start gap-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0" />
+                  <div className="flex-1 min-w-0">{children}</div>
+                </li>
+              );
+            }
+            return <li className="leading-relaxed">{children}</li>;
+          },
           code: ({ children }) => (
             <code className="px-1.5 py-0.5 rounded bg-slate-800 text-amber-300 font-mono text-[11px] border border-slate-700">
               {children}

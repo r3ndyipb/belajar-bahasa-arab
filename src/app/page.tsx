@@ -193,6 +193,75 @@ const normalizeArabic = (text: string): string => {
     .trim();
 };
 
+// Konversi teks Arab berharakat ke transliterasi Latin secara otomatis
+const generateArabicToLatin = (text: string): string => {
+  if (!text) return "";
+  const charMap: Record<string, string> = {
+    "ء": "'", "آ": "ā", "أ": "a", "إ": "i", "ا": "a",
+    "ب": "b", "ت": "t", "ث": "ts", "ج": "j", "ح": "ḥ",
+    "خ": "kh", "د": "d", "ذ": "dz", "ر": "r", "ز": "z",
+    "س": "s", "ش": "sy", "ص": "ṣ", "ض": "ḍ", "ط": "ṭ",
+    "ظ": "ẓ", "ع": "'", "غ": "gh", "ف": "f", "ق": "q",
+    "ك": "k", "ل": "l", "م": "m", "ن": "n", "ه": "h",
+    "و": "w", "ي": "y", "ى": "ā", "ة": "h", "ئ": "'", "ؤ": "'",
+    "ٱ": "a",
+  };
+
+  const words = text.trim().split(/\s+/);
+  const latinWords = words.map((word) => {
+    let res = "";
+    for (let i = 0; i < word.length; i++) {
+      const c = word[i];
+      if (charMap[c]) {
+        let base = charMap[c];
+        let isSyaddah = false;
+        let vowel = "";
+        let j = i + 1;
+
+        while (j < word.length && /[\u064B-\u065F\u0670]/.test(word[j])) {
+          const mark = word[j];
+          if (mark === "\u0651") isSyaddah = true;
+          else if (mark === "\u064E") vowel = "a";
+          else if (mark === "\u064F") vowel = "u";
+          else if (mark === "\u0650") vowel = "i";
+          else if (mark === "\u064B") vowel = "an";
+          else if (mark === "\u064C") vowel = "un";
+          else if (mark === "\u064D") vowel = "in";
+          else if (mark === "\u0670") vowel = "ā";
+          j++;
+        }
+
+        if (isSyaddah && res.length > 0) {
+          base = base + base;
+        }
+
+        if (vowel === "a" && word[j] === "ا") {
+          vowel = "ā";
+          j++;
+        } else if (vowel === "i" && (word[j] === "ي" || word[j] === "ى")) {
+          vowel = "ī";
+          j++;
+        } else if (vowel === "u" && word[j] === "و") {
+          vowel = "ū";
+          j++;
+        }
+
+        if ((c === "أ" || c === "إ" || c === "ٱ" || c === "ا") && i === 0 && vowel) {
+          base = "";
+        }
+
+        res += base + vowel;
+        i = j - 1;
+      } else if (!/[\u064B-\u065F\u0670]/.test(c)) {
+        res += c;
+      }
+    }
+    return res;
+  });
+
+  return latinWords.join(" ");
+};
+
 // Hitung Levenshtein Distance untuk toleransi variasi fonetik STT
 const levenshteinDistance = (a: string, b: string): number => {
   const m = a.length;
@@ -552,14 +621,15 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     latin: "Bikhayrin wal-hamdu lillāh, wa kayfa hāluka anta yā ustādz?",
     translation: "Alhamdulillah kabar baik, dan bagaimana kabarmu wahai ustadz?",
     notes: `💡 **Catatan Kosakata / Kaidah:**
-• **بِخَيْرٍ** (*Bi-khayr*): Baik / dalam kebaikan (Huruf jar بِ = dalam/dengan + kata خَيْرٍ = kebaikan/kondisi baik).
-• **وَالْحَمْدُ** (*Wal-hamdu*): Dan segala puji (Huruf sambung وَ = dan + الْحَمْدُ = segala pujian).
-• **لِلَّهِ** (*Lillāh*): Bagi Allah (Huruf jar لِ = untuk/milik + lafadz jalalah اللَّه).
-• **وَكَيْفَ** (*Wa kayfa*): Dan bagaimana (Kata tanya / isim istifham untuk menanyakan keadaan).
-• **حَالُكَ** (*Hāluka*): Kabarmu / keadaanmu (Kata حَال = kondisi + -كَ = akhiran kepemilikan untuk laki-laki tunggal).
-• **أَنْتَ** (*Anta*): Anda / kamu (Dhamir munfashil sebagai penguat/taukid).
-• **يَا** (*Yā*): Wahai (Huruf nida untuk memanggil).
-• **أُسْتَاذُ** (*Ustādz*): Ustadz / guru (Kata benda yang dipanggil / munada berharakat tunggal dhammah).
+
+- **بِخَيْرٍ** (*Bi-khayr*): Baik / dalam kebaikan (Huruf jar بِ = dalam/dengan + kata خَيْرٍ = kebaikan/kondisi baik).
+- **وَالْحَمْدُ** (*Wal-hamdu*): Dan segala puji (Huruf sambung وَ = dan + الْحَمْدُ = segala pujian).
+- **لِلَّهِ** (*Lillāh*): Bagi Allah (Huruf jar لِ = untuk/milik + lafadz jalalah اللَّه).
+- **وَكَيْفَ** (*Wa kayfa*): Dan bagaimana (Kata tanya / isim istifham untuk menanyakan keadaan).
+- **حَالُكَ** (*Hāluka*): Kabarmu / keadaanmu (Kata حَال = kondisi + -كَ = akhiran kepemilikan untuk laki-laki tunggal).
+- **أَنْتَ** (*Anta*): Anda / kamu (Dhamir munfashil sebagai penguat/taukid).
+- **يَا** (*Yā*): Wahai (Huruf nida untuk memanggil).
+- **أُسْتَاذُ** (*Ustādz*): Ustadz / guru (Kata benda yang dipanggil / munada berharakat tunggal dhammah).
 
 **Fokus Tata Bahasa**: Kalimat diawali dengan keterangan keadaan (*bi-khayr*), disusul kalimat tahmid (*al-hamdu lillāh*), lalu mengembalikan pertanyaan secara santun (*wa kayfa hāluka anta yā ustādz*) menggunakan isim istifham *kayfa* dan sapaan hormat *yā ustādz*.`,
   },
@@ -568,13 +638,14 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     latin: "Ahlan bik, urīdu an ata'allamal-muhādatsatal-'arabiyyata al-yawm.",
     translation: "Selamat datang, saya ingin belajar percakapan bahasa Arab hari ini.",
     notes: `💡 **Catatan Kosakata / Kaidah:**
-• **أَهْلًا بِكَ** (*Ahlan bika*): Selamat datang padamu (Ungkapan keramahan menyambut lawan bicara pria).
-• **أُرِيدُ** (*Urīdu*): Saya ingin (Kata kerja masa kini / fi'il mudhari' untuk subjek saya/أَنَا).
-• **أَنْ** (*An*): Untuk / agar (Huruf penjelas maksud / amil nashab yang menashabkan fi'il berikutnya).
-• **أَتَعَلَّمَ** (*Ata'allama*): Saya belajar (Fi'il mudhari' berharakat akhir fathah karena dipengaruhi huruf أَنْ).
-• **الْمُحَادَثَةَ** (*Al-muhādatsata*): Percakapan (Objek kalimat / maf'ul bih berharakat fathah).
-• **الْعَرَبِيَّةَ** (*Al-'arabiyyata*): Bahasa Arab (Kata sifat / na'at yang menerangkan kata al-muhādatsata).
-• **الْيَوْمَ** (*Al-yawma*): Hari ini (Keterangan waktu / zharaf zaman berharakat fathah).
+
+- **أَهْلًا بِكَ** (*Ahlan bika*): Selamat datang padamu (Ungkapan keramahan menyambut lawan bicara pria).
+- **أُرِيدُ** (*Urīdu*): Saya ingin (Kata kerja masa kini / fi'il mudhari' untuk subjek saya/أَنَا).
+- **أَنْ** (*An*): Untuk / agar (Huruf penjelas maksud / amil nashab yang menashabkan fi'il berikutnya).
+- **أَتَعَلَّمَ** (*Ata'allama*): Saya belajar (Fi'il mudhari' berharakat akhir fathah karena dipengaruhi huruf أَنْ).
+- **الْمُحَادَثَةَ** (*Al-muhādatsata*): Percakapan (Objek kalimat / maf'ul bih berharakat fathah).
+- **الْعَرَبِيَّةَ** (*Al-'arabiyyata*): Bahasa Arab (Kata sifat / na'at yang menerangkan kata al-muhādatsata).
+- **الْيَوْمَ** (*Al-yawma*): Hari ini (Keterangan waktu / zharaf zaman berharakat fathah).
 
 **Fokus Tata Bahasa**: Kata kerja kedua **أَتَعَلَّمَ** berubah harakat akhirnya menjadi fathah (*manshub*) karena didahului huruf **أَنْ**. Pasangan **الْمُحَادَثَةَ الْعَرَبِيَّةَ** adalah susunan sifat-karakter (*na'at-man'ut*) yang keduanya berharakat fathah.`,
   },
@@ -583,13 +654,14 @@ const DEFAULT_RECOMMENDATIONS: RecommendationOption[] = [
     latin: "'Alaikumus-salāmu wa rahmatullāh, anā musta'iddun lit-tadrīb!",
     translation: "Wa'alaikumussalam warahmatullah, saya siap untuk latihan!",
     notes: `💡 **Catatan Kosakata / Kaidah:**
-• **عَلَيْكُمُ** (*'Alaikum*): Atas kalian / padamu (Huruf عَلَى = atas + -كُمْ = kalian/kamu jamak penghormatan).
-• **السَّلَامُ** (*As-salāmu*): Keselamatan / damai (Kata benda utama / mubtada muakhkhar berharakat dhammah).
-• **وَرَحْمَةُ** (*Wa rahmatu*): Dan rahmat / kasih sayang (Huruf sambung وَ = dan + kata رَحْمَة).
-• **اللَّهِ** (*Allāh*): Allah (Kata pemilik / mudhaf ilaih berharakat kasrah).
-• **أَنَا** (*Anā*): Saya (Kata ganti diri pertama / dhamir munfashil sebagai subjek kalimat).
-• **مُسْتَعِدٌّ** (*Musta'iddun*): Siap / bersedia (Kata sifat / isim fa'il sebagai predikat/khabar bertanwin dhammah).
-• **لِلتَّدْرِيبِ** (*Lit-tadrīb*): Untuk latihan (Huruf لِ = untuk + kata تَدْرِيب = latihan berharakat kasrah).
+
+- **عَلَيْكُمُ** (*'Alaikum*): Atas kalian / padamu (Huruf عَلَى = atas + -كُمْ = kalian/kamu jamak penghormatan).
+- **السَّلَامُ** (*As-salāmu*): Keselamatan / damai (Kata benda utama / mubtada muakhkhar berharakat dhammah).
+- **وَرَحْمَةُ** (*Wa rahmatu*): Dan rahmat / kasih sayang (Huruf sambung وَ = dan + kata رَحْمَة).
+- **اللَّهِ** (*Allāh*): Allah (Kata pemilik / mudhaf ilaih berharakat kasrah).
+- **أَنَا** (*Anā*): Saya (Kata ganti diri pertama / dhamir munfashil sebagai subjek kalimat).
+- **مُسْتَعِدٌّ** (*Musta'iddun*): Siap / bersedia (Kata sifat / isim fa'il sebagai predikat/khabar bertanwin dhammah).
+- **لِلتَّدْرِيبِ** (*Lit-tadrīb*): Untuk latihan (Huruf لِ = untuk + kata تَدْرِيب = latihan berharakat kasrah).
 
 **Fokus Tata Bahasa**: Menjawab salam menggunakan susunan kalimat nominal (*jumlah ismiyyah*). Bagian kedua menyatakan kesiapan diri (*Anā musta'iddun*) di mana subjek (*mubtada*) dipasangkan dengan kata sifat (*khabar*) bertanwin, dilanjutkan pelengkap tujuan (*lit-tadrīb*).`,
   },
@@ -603,16 +675,17 @@ const INITIAL_AI_SPEECH: ParsedAiSpeech = {
   translation:
     "Selamat datang di program pembelajaran bahasa Arab interaktif! Bagaimana kabarmu hari ini?",
   notes: `💡 **Catatan Kosakata / Kaidah:**
-• **أَهْلًا وَسَهْلًا** (*Ahlan wa sahlan*): Selamat datang (Ungkapan sambutan ramah).
-• **بِكَ** (*Bika*): Padamu (Huruf jar bi = pada/dengan + dhomir ka = kamu pria tunggal).
-• **فِي** (*Fī*): Di dalam / pada (Huruf jar penunjuk tempat atau ruang lingkup).
-• **بَرْنَامَجِ** (*Barnāmaji*): Program / acara (Kata benda majrur dengan kasrah).
-• **تَعَلُّمِ** (*Ta'allumi*): Pembelajaran (Kata benda bentuk masdar).
-• **اللُّغَةِ** (*Al-lughati*): Bahasa (Kata benda berharakat kasrah).
-• **الْعَرَبِيَّةِ** (*Al-'arabiyyati*): Bahasa Arab (Kata sifat / na'at berharakat kasrah).
-• **كَيْفَ** (*Kayfa*): Bagaimana (Isim istifham / kata tanya menanyakan keadaan).
-• **حَالُكَ** (*Hāluka*): Keadaanmu / kabarmu (Kata hāl = kabar + dhomir ka = kamu pria).
-• **الْيَوْمَ** (*Al-yawma*): Hari ini (Keterangan waktu / zharaf zaman berharakat fathah).
+
+- **أَهْلًا وَسَهْلًا** (*Ahlan wa sahlan*): Selamat datang (Ungkapan sambutan ramah).
+- **بِكَ** (*Bika*): Padamu (Huruf jar bi = pada/dengan + dhomir ka = kamu pria tunggal).
+- **فِي** (*Fī*): Di dalam / pada (Huruf jar penunjuk tempat atau ruang lingkup).
+- **بَرْنَامَجِ** (*Barnāmaji*): Program / acara (Kata benda majrur dengan kasrah).
+- **تَعَلُّمِ** (*Ta'allumi*): Pembelajaran (Kata benda bentuk masdar).
+- **اللُّغَةِ** (*Al-lughati*): Bahasa (Kata benda berharakat kasrah).
+- **الْعَرَبِيَّةِ** (*Al-'arabiyyati*): Bahasa Arab (Kata sifat / na'at berharakat kasrah).
+- **كَيْفَ** (*Kayfa*): Bagaimana (Isim istifham / kata tanya menanyakan keadaan).
+- **حَالُكَ** (*Hāluka*): Keadaanmu / kabarmu (Kata hāl = kabar + dhomir ka = kamu pria).
+- **الْيَوْمَ** (*Al-yawma*): Hari ini (Keterangan waktu / zharaf zaman berharakat fathah).
 
 **Fokus Tata Bahasa**: Ungkapan penyambutan ramah diikuti susunan kata majemuk bertingkat (*idhafah*), dilanjutkan dengan kalimat tanya kabar menggunakan isim istifham *kayfa* dan keterangan waktu *al-yawm*.`,
   recommendations: DEFAULT_RECOMMENDATIONS,
@@ -698,6 +771,7 @@ export default function ArabicLearningThreeColumns() {
   const [latinFontSize, setLatinFontSize] = useState<number>(13); // 10px - 24px
   const [evalFontSize, setEvalFontSize] = useState<number>(18); // 12px - 34px: Ukuran font evaluasi kata per kata
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
+  const [isGeneratingTargetLatin, setIsGeneratingTargetLatin] = useState(false);
 
   // ==========================================
   // KOLOM KIRI (BARIS ATAS): TRANSLATE INDONESIA - ARAB
@@ -763,6 +837,47 @@ Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kat
       console.warn("Gagal meminta penjelasan kaidah opsi:", err);
     } finally {
       setIsExplainingOption(false);
+    }
+  };
+
+  // Sinkronisasi otomatis teks Latin & Arti ketika teks Arab target diedit manual
+  const handleAutoSyncTargetFromArabic = async (arabicText: string) => {
+    if (!arabicText || !arabicText.trim()) return;
+    setIsGeneratingTargetLatin(true);
+    setValidationResult(null);
+
+    // Langkah 1: Langsung isi instan dengan transliterasi algoritma lokal tanpa menunggu API
+    const instantLatin = generateArabicToLatin(arabicText);
+    setTargetPractice((prev) => ({
+      ...prev,
+      latin: instantLatin || prev.latin,
+    }));
+
+    // Langkah 2: Panggil API penerjemah untuk mendapatkan transliterasi AI yang lebih presisi beserta artinya
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          text: arabicText.trim(),
+          direction: "ar-id",
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.latin || data.indonesian) {
+          setTargetPractice((prev) => ({
+            ...prev,
+            latin: data.latin || prev.latin || instantLatin,
+            translation: data.indonesian || prev.translation,
+          }));
+        }
+      }
+    } catch (err) {
+      console.warn("Auto-sync latin & translation error:", err);
+    } finally {
+      setIsGeneratingTargetLatin(false);
     }
   };
 
@@ -2834,23 +2949,57 @@ Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kat
               {isEditingTranscript ? (
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between text-[10px] text-slate-400">
-                    <span>Edit Kalimat Target:</span>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditingTranscript(false)}
-                      className="text-teal-400 font-semibold hover:underline"
-                    >
-                      Simpan & Selesai
-                    </button>
+                    <span className="font-semibold text-teal-300">Edit Kalimat Target:</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleAutoSyncTargetFromArabic(targetPractice.arabic)}
+                        disabled={isGeneratingTargetLatin}
+                        className="text-[10px] px-2 py-0.5 rounded bg-teal-950/80 text-teal-300 border border-teal-700/60 hover:bg-teal-900 flex items-center gap-1 transition-colors"
+                        title="Perbarui otomatis bacaan Latin dan terjemahan Indonesia berdasarkan teks Arab di atas"
+                      >
+                        {isGeneratingTargetLatin ? (
+                          <>
+                            <RefreshCw className="w-2.5 h-2.5 animate-spin" />
+                            <span>Menyinkronkan...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                            <span>Sinkronkan Latin & Arti</span>
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingTranscript(false);
+                          setValidationResult(null);
+                        }}
+                        className="text-teal-400 font-semibold hover:underline"
+                      >
+                        Simpan & Selesai
+                      </button>
+                    </div>
                   </div>
                   <textarea
                     value={targetPractice.arabic}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                      const newArabic = e.target.value;
+                      const autoLatin = generateArabicToLatin(newArabic);
                       setTargetPractice((prev) => ({
                         ...prev,
-                        arabic: e.target.value,
-                      }))
-                    }
+                        arabic: newArabic,
+                        latin: autoLatin || prev.latin,
+                      }));
+                      setValidationResult(null);
+                    }}
+                    onBlur={() => {
+                      if (targetPractice.arabic.trim()) {
+                        handleAutoSyncTargetFromArabic(targetPractice.arabic);
+                      }
+                    }}
                     dir="rtl"
                     rows={2}
                     style={{ fontSize: `${Math.max(20, arabicFontSize - 2)}px` }}
@@ -2858,30 +3007,43 @@ Uraikan kata per kata secara berurutan dengan transliterasi, terjemahan arti kat
                     placeholder="Masukkan kalimat Arab target..."
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                    <input
-                      type="text"
-                      value={targetPractice.latin}
-                      onChange={(e) =>
-                        setTargetPractice((prev) => ({
-                          ...prev,
-                          latin: e.target.value,
-                        }))
-                      }
-                      placeholder="Transliterasi Latin..."
-                      className="bg-slate-950/80 border border-slate-700 rounded-lg px-2 py-1 text-xs text-teal-300 italic focus:outline-none focus:border-teal-500"
-                    />
-                    <input
-                      type="text"
-                      value={targetPractice.translation}
-                      onChange={(e) =>
-                        setTargetPractice((prev) => ({
-                          ...prev,
-                          translation: e.target.value,
-                        }))
-                      }
-                      placeholder="Arti bahasa Indonesia..."
-                      className="bg-slate-950/80 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-teal-500"
-                    />
+                    <div className="space-y-0.5">
+                      <div className="flex items-center justify-between text-[9px] text-slate-400">
+                        <span>Bacaan Latin:</span>
+                        {isGeneratingTargetLatin && (
+                          <span className="text-amber-400 font-mono">menyelaraskan...</span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={targetPractice.latin}
+                        onChange={(e) =>
+                          setTargetPractice((prev) => ({
+                            ...prev,
+                            latin: e.target.value,
+                          }))
+                        }
+                        placeholder="Transliterasi Latin..."
+                        className="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-2 py-1 text-xs text-teal-300 italic focus:outline-none focus:border-teal-500"
+                      />
+                    </div>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center justify-between text-[9px] text-slate-400">
+                        <span>Terjemahan Indonesia:</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={targetPractice.translation}
+                        onChange={(e) =>
+                          setTargetPractice((prev) => ({
+                            ...prev,
+                            translation: e.target.value,
+                          }))
+                        }
+                        placeholder="Arti bahasa Indonesia..."
+                        className="w-full bg-slate-950/80 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 focus:outline-none focus:border-teal-500"
+                      />
+                    </div>
                   </div>
                 </div>
               ) : (
