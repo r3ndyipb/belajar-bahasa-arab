@@ -788,6 +788,8 @@ export default function ArabicLearningThreeColumns() {
 
   // Mode Menu Sidebar Kolom Kiri: default null (tertutup), "translate" (Penerjemah), "reference" (Chat Referensi), "notes" (Kaidah & Kosakata Opsi)
   const [activeLeftMenu, setActiveLeftMenu] = useState<"translate" | "reference" | "notes" | null>(null);
+  // Mode Ukuran Drawer Kolom Kiri: "normal" (lebar default), "full" (lebar penuh menutup kolom tengah)
+  const [leftDrawerWidthMode, setLeftDrawerWidthMode] = useState<"normal" | "full">("normal");
   const [selectedOptionNotes, setSelectedOptionNotes] = useState<RecommendationOption>(DEFAULT_RECOMMENDATIONS[0]);
   const [isExplainingOption, setIsExplainingOption] = useState<boolean>(false);
 
@@ -1841,7 +1843,11 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
         {/* 1. MENU ICON BAR DI SISI PALING KIRI DENGAN TOOLTIP HOVER & SLIDER DRAWER  */}
         {/* ========================================================================= */}
         <div
-          className={`shrink-0 flex items-stretch z-30 ${
+          className={`flex items-stretch z-30 transition-all duration-300 ${
+            activeLeftMenu && leftDrawerWidthMode === "full"
+              ? "flex-1 min-w-0"
+              : "shrink-0"
+          } ${
             activeMobileTab === "left" ? "flex" : "hidden lg:flex"
           }`}
         >
@@ -1938,7 +1944,10 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
                 <div className="relative group flex items-center justify-center w-full">
                   <button
                     type="button"
-                    onClick={() => setActiveLeftMenu(null)}
+                    onClick={() => {
+                      setActiveLeftMenu(null);
+                      setLeftDrawerWidthMode("normal");
+                    }}
                     className="w-9 h-9 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-400 hover:text-rose-300 border border-slate-700/60 flex items-center justify-center transition-colors"
                     aria-label="Tutup Panel Menu"
                   >
@@ -1954,7 +1963,13 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
 
           {/* B. SLIDER DRAWER PANEL DARI KIRI (DEFAULT TERTUTUP - MUNCUL KETIKA MENU DIKLIK) */}
           {activeLeftMenu && (
-            <div className="w-[340px] sm:w-[400px] xl:w-[440px] h-full min-h-0 ml-2.5 flex flex-col bg-slate-900/95 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md animate-in slide-in-from-left-4 duration-200">
+            <div
+              className={`${
+                leftDrawerWidthMode === "full"
+                  ? "flex-1 min-w-0"
+                  : "w-[340px] sm:w-[400px] xl:w-[440px] shrink-0"
+              } h-full min-h-0 ml-2.5 flex flex-col bg-slate-900/95 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md transition-all duration-300 animate-in slide-in-from-left-4`}
+            >
               {/* Header Slider Panel */}
               <div className="shrink-0 p-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0">
@@ -1994,10 +2009,40 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
+                  {/* Tombol Toggle Ukuran Normal / Full (Menutup Kolom Tengah) */}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setLeftDrawerWidthMode((prev) =>
+                        prev === "normal" ? "full" : "normal"
+                      )
+                    }
+                    className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors hidden sm:flex items-center justify-center"
+                    title={
+                      leftDrawerWidthMode === "full"
+                        ? "Kembalikan ke Ukuran Normal"
+                        : "Perlebar Penuh (Menutup Kolom Tengah)"
+                    }
+                    aria-label={
+                      leftDrawerWidthMode === "full"
+                        ? "Kembalikan ke Ukuran Normal"
+                        : "Perlebar Penuh"
+                    }
+                  >
+                    {leftDrawerWidthMode === "full" ? (
+                      <Minimize2 className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <Maximize2 className="w-4 h-4" />
+                    )}
+                  </button>
+
                   {/* Tombol Tutup Slider */}
                   <button
                     type="button"
-                    onClick={() => setActiveLeftMenu(null)}
+                    onClick={() => {
+                      setActiveLeftMenu(null);
+                      setLeftDrawerWidthMode("normal");
+                    }}
                     className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
                     title="Tutup Panel Slider"
                     aria-label="Tutup Panel"
@@ -2533,8 +2578,12 @@ WAJIB IKUTI FORMAT PERSIS SEPERTI CONTOH DI BAWAH INI (LANGSUNG LIST KATA, JANGA
         {/*    BAWAH: KOTAK KONTROL AUDIO STICKY COMPACT                              */}
         {/* ========================================================================= */}
         <section
-          className={`flex-1 h-full min-h-0 flex flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl ${
-            activeMobileTab === "center" ? "flex" : "hidden lg:flex"
+          className={`flex-1 h-full min-h-0 flex-col bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden shadow-xl ${
+            activeMobileTab === "center"
+              ? "flex"
+              : activeLeftMenu && leftDrawerWidthMode === "full"
+              ? "hidden"
+              : "hidden lg:flex"
           }`}
         >
           {/* Header Kolom Tengah */}
